@@ -925,32 +925,20 @@
       const allItems = groups.flatMap(group =>
         group.items.map(item => ({ ...item, osm: group.osm }))
       ).sort((a, b) => {
-        const osmCompare = a.osm.localeCompare(b.osm);
-        return osmCompare !== 0
-          ? osmCompare
-          : a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: "base" });
+        const dateCompare = a.expires - b.expires;
+        if (dateCompare !== 0) return dateCompare;
+        return a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: "base" });
       });
 
       const totalFees = allItems.reduce((sum, item) => sum + item.cost, 0);
-
-      const osmRows = groups
-        .slice()
-        .sort((a, b) => a.osm.localeCompare(b.osm))
-        .map(group => `
-          <tr>
-            <td>${escapeHTML(group.osm)}</td>
-            <td>${group.items.length}</td>
-            <td class="amount">${escapeHTML(currency.format(group.totalCost))}</td>
-          </tr>
-        `).join("");
 
       const detailRows = allItems.map(item => `
         <tr>
           <td>${escapeHTML(item.unit)}</td>
           <td>${escapeHTML(prettyDate(item.expires))}</td>
+          <td class="amount">${escapeHTML(currency.format(item.cost))}</td>
           <td>${escapeHTML(item.listingId || "")}</td>
           <td>${escapeHTML(item.osm)}</td>
-          <td class="amount">${escapeHTML(currency.format(item.cost))}</td>
         </tr>
       `).join("");
 
@@ -973,27 +961,15 @@
           </div>
         </div>
 
-        <h2 class="print-section-title">OSM Summary</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>OSM</th>
-              <th>Unit Count</th>
-              <th class="amount">Total Annual Listing Fees</th>
-            </tr>
-          </thead>
-          <tbody>${osmRows}</tbody>
-        </table>
-
-        <h2 class="print-section-title">Unit Detail</h2>
+        <h2 class="print-section-title">Renewal Detail</h2>
         <table>
           <thead>
             <tr>
               <th>Unit / Listing</th>
               <th>Expiration Date</th>
+              <th class="amount">Annual Listing Fee</th>
               <th>VRBO Listing ID</th>
               <th>OSM</th>
-              <th class="amount">Annual Listing Fee</th>
             </tr>
           </thead>
           <tbody>${detailRows}</tbody>
