@@ -419,12 +419,104 @@
       .preview-grid { grid-template-columns: 1fr; }
     }
 
+    .print-summary {
+      display: none;
+    }
+
     @media print {
-      body { background: white; }
-      .hero, .panel.setup, .button-row, .toolbar button, .toast { display: none !important; }
-      .page { max-width: none; padding: 0; }
-      .osm-card { box-shadow: none; break-inside: avoid; margin-bottom: 16px; }
-      .summary { display: block !important; }
+      body {
+        background: white;
+        color: #111827;
+      }
+
+      .hero,
+      .panel.setup,
+      #summary,
+      #osmContainer,
+      .toast {
+        display: none !important;
+      }
+
+      .page {
+        max-width: none;
+        padding: 0;
+      }
+
+      .print-summary {
+        display: block !important;
+        padding: 18px;
+      }
+
+      .print-summary h1 {
+        margin: 0 0 4px;
+        font-size: 24px;
+      }
+
+      .print-subtitle {
+        margin-bottom: 18px;
+        color: #475569;
+        font-size: 13px;
+      }
+
+      .print-kpis {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .print-kpi {
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 10px 12px;
+      }
+
+      .print-kpi .label {
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+      }
+
+      .print-kpi .value {
+        margin-top: 4px;
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .print-section-title {
+        margin: 18px 0 8px;
+        font-size: 15px;
+      }
+
+      .print-summary table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10.5px;
+      }
+
+      .print-summary th,
+      .print-summary td {
+        border: 1px solid #cbd5e1;
+        padding: 6px 7px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .print-summary th {
+        background: #f1f5f9;
+        font-weight: 800;
+      }
+
+      .print-summary .amount {
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .print-summary tr {
+        break-inside: avoid;
+      }
     }
   </style>
 </head>
@@ -508,7 +600,6 @@
           </div>
         </div>
         <div class="button-row" style="margin-top:0;">
-          <button id="copyAllSlackBtn" class="outline">💬 Copy All Slack Messages</button>
           <button id="copyAllAsanaBtn" class="primary">📋 Copy Entire Monthly Unit List</button>
           <button onclick="window.print()" class="secondary">🖨 Print Summary</button>
         </div>
@@ -521,6 +612,7 @@
     </section>
 
     <main id="osmContainer" class="osm-container"></main>
+    <section id="printSummary" class="print-summary"></section>
   </div>
 
   <div id="toast" class="toast">Copied</div>
@@ -828,6 +920,87 @@
       });
     }
 
+
+    function renderPrintSummary(groups) {
+      const allItems = groups.flatMap(group =>
+        group.items.map(item => ({ ...item, osm: group.osm }))
+      ).sort((a, b) => {
+        const osmCompare = a.osm.localeCompare(b.osm);
+        return osmCompare !== 0
+          ? osmCompare
+          : a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: "base" });
+      });
+
+      const totalFees = allItems.reduce((sum, item) => sum + item.cost, 0);
+
+      const osmRows = groups
+        .slice()
+        .sort((a, b) => a.osm.localeCompare(b.osm))
+        .map(group => `
+          <tr>
+            <td>${escapeHTML(group.osm)}</td>
+            <td>${group.items.length}</td>
+            <td class="amount">${escapeHTML(currency.format(group.totalCost))}</td>
+          </tr>
+        `).join("");
+
+      const detailRows = allItems.map(item => `
+        <tr>
+          <td>${escapeHTML(item.unit)}</td>
+          <td>${escapeHTML(prettyDate(item.expires))}</td>
+          <td>${escapeHTML(item.listingId || "")}</td>
+          <td>${escapeHTML(item.osm)}</td>
+          <td class="amount">${escapeHTML(currency.format(item.cost))}</td>
+        </tr>
+      `).join("");
+
+      $("printSummary").innerHTML = `
+        <h1>VRBO Renewal Summary</h1>
+        <div class="print-subtitle">Renewal Month: ${escapeHTML(selectedMonthLabel)}</div>
+
+        <div class="print-kpis">
+          <div class="print-kpi">
+            <div class="label">Renewal Month</div>
+            <div class="value">${escapeHTML(selectedMonthLabel)}</div>
+          </div>
+          <div class="print-kpi">
+            <div class="label">Units Due</div>
+            <div class="value">${allItems.length}</div>
+          </div>
+          <div class="print-kpi">
+            <div class="label">Annual Listing Fees</div>
+            <div class="value">${escapeHTML(currency.format(totalFees))}</div>
+          </div>
+        </div>
+
+        <h2 class="print-section-title">OSM Summary</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>OSM</th>
+              <th>Unit Count</th>
+              <th class="amount">Total Annual Listing Fees</th>
+            </tr>
+          </thead>
+          <tbody>${osmRows}</tbody>
+        </table>
+
+        <h2 class="print-section-title">Unit Detail</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Unit / Listing</th>
+              <th>Expiration Date</th>
+              <th>VRBO Listing ID</th>
+              <th>OSM</th>
+              <th class="amount">Annual Listing Fee</th>
+            </tr>
+          </thead>
+          <tbody>${detailRows}</tbody>
+        </table>
+      `;
+    }
+
     function generate() {
       const selectedMonth = $("renewalMonth").value;
       if (!rawRows.length) {
@@ -927,6 +1100,7 @@
       }
 
       renderGroups(generatedGroups);
+      renderPrintSummary(generatedGroups);
       $("status").textContent = `Generated ${selectedMonthLabel} renewal lists successfully.`;
       $("status").className = "status";
     }
@@ -971,6 +1145,7 @@
       $("mapping").style.display = "none";
       $("summary").style.display = "none";
       $("osmContainer").innerHTML = "";
+      $("printSummary").innerHTML = "";
       $("unitSearch").value = "";
       $("status").textContent = "Upload a CSV to begin. Records with blank expiration dates will be excluded from all renewal lists and totals.";
       $("status").className = "status";
@@ -981,13 +1156,6 @@
         .flatMap(group => group.items.map(item => item.unit))
         .join("\n");
       copyText(text, "Entire unit list copied for Asana");
-    });
-
-    $("copyAllSlackBtn").addEventListener("click", () => {
-      const text = generatedGroups
-        .map(group => buildSlackMessage(group))
-        .join("\n\n----------------------------------------\n\n");
-      copyText(text, "All Slack messages copied");
     });
 
 
