@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VRBO Renewal Manager</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --line: #d9e2ec;
+      --brand: #1f6f5f;
+      --brand-dark: #155347;
+      --soft: #eaf4f1;
+      --warning: #fff7e6;
+      --warning-line: #f2c166;
+      --danger: #b42318;
+      --shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #1f6f5f, #2f8c78);
+      color: white;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    .hero p {
+      margin: 0;
+      opacity: 0.92;
+      line-height: 1.5;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .field {
+      grid-column: span 4;
+    }
+
+    .field.wide {
+      grid-column: span 8;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 7px;
+    }
+
+    input[type="file"],
+    input[type="month"],
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font: inherit;
+      background: white;
+    }
+
+    textarea {
+      min-height: 170px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .primary {
+      background: var(--brand);
+      color: white;
+    }
+
+    .primary:hover { background: var(--brand-dark); }
+
+    .secondary {
+      background: #eef2f6;
+      color: #243447;
+    }
+
+    .secondary:hover { background: #e2e8f0; }
+
+    .outline {
+      background: white;
+      color: var(--brand);
+      border: 1px solid var(--brand);
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .status.error { color: var(--danger); }
+
+    .mapping {
+      display: none;
+      margin-top: 18px;
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+    }
+
+    .summary {
+      display: none;
+    }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      background: #fbfcfe;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .stat .value {
+      font-size: 26px;
+      font-weight: 800;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .osm-container {
+      display: grid;
+      gap: 18px;
+    }
+
+    .osm-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .osm-header {
+      background: var(--soft);
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .osm-header h2 {
+      margin: 0;
+      font-size: 21px;
+    }
+
+    .osm-meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .osm-body {
+      padding: 18px 20px 22px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 620px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e6edf3;
+      text-align: left;
+      padding: 10px 8px;
+      font-size: 14px;
+    }
+
+    th {
+      color: #475467;
+      background: #fafbfd;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    td.amount, th.amount {
+      text-align: right;
+    }
+
+    details {
+      border: 1px solid var(--warning-line);
+      background: var(--warning);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-top: 18px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .issues-list {
+      margin: 12px 0 0;
+      padding-left: 20px;
+      line-height: 1.7;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 28px 12px;
+    }
+
+    .hidden { display: none !important; }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      background: #101828;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: 0.2s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 850px) {
+      .field, .field.wide { grid-column: span 12; }
+      .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 520px) {
+      .summary-cards { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 25px; }
+      .page { padding: 18px 12px 40px; }
+    }
+
+
+    .search-wrap {
+      min-width: 260px;
+      flex: 1 1 280px;
+      max-width: 420px;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font: inherit;
+      background: white;
+    }
+
+    .osm-header {
+      cursor: pointer;
+    }
+
+    .osm-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chevron {
+      font-size: 18px;
+      transition: transform 0.2s ease;
+      color: var(--brand);
+    }
+
+    .osm-card.collapsed .chevron {
+      transform: rotate(-90deg);
+    }
+
+    .osm-card.collapsed .osm-body {
+      display: none;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .preview-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fbfcfe;
+      overflow: hidden;
+    }
+
+    .preview-card-header {
+      padding: 12px 14px;
+      font-weight: 800;
+      border-bottom: 1px solid var(--line);
+      background: white;
+    }
+
+    .slack-preview {
+      padding: 16px;
+      background: white;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .slack-preview strong {
+      font-weight: 800;
+    }
+
+    .asana-preview {
+      padding: 14px 16px;
+      white-space: pre-wrap;
+      line-height: 1.65;
+      font-size: 14px;
+      max-height: 340px;
+      overflow: auto;
+    }
+
+    .preview-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 0 16px 16px;
+      background: white;
+    }
+
+    .no-match {
+      display: none !important;
+    }
+
+    @media (max-width: 850px) {
+      .preview-grid { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      body { background: white; }
+      .hero, .panel.setup, .button-row, .toolbar button, .toast { display: none !important; }
+      .page { max-width: none; padding: 0; }
+      .osm-card { box-shadow: none; break-inside: avoid; margin-bottom: 16px; }
+      .summary { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <h1>VRBO Renewal Manager</h1>
+      <p>Upload the Notion CSV, select a renewal month, then generate Slack approval messages and Asana task lists by OSM.</p>
+    </section>
+
+    <section class="panel setup">
+      <div class="grid">
+        <div class="field wide">
+          <label for="csvFile">Notion CSV Export</label>
+          <input id="csvFile" type="file" accept=".csv,text/csv" />
+        </div>
+        <div class="field">
+          <label for="renewalMonth">Renewal Month</label>
+          <input id="renewalMonth" type="month" />
+        </div>
+      </div>
+
+      <div id="mapping" class="mapping">
+        <h3 style="margin-top:0;">Confirm CSV Columns</h3>
+        <div class="grid">
+          <div class="field">
+            <label for="unitColumn">Unit / Listing</label>
+            <select id="unitColumn"></select>
+          </div>
+          <div class="field">
+            <label for="osmColumn">OSM</label>
+            <select id="osmColumn"></select>
+          </div>
+          <div class="field">
+            <label for="dateColumn">Expiration Date</label>
+            <select id="dateColumn"></select>
+          </div>
+          <div class="field">
+            <label for="costColumn">Annual Listing Fee</label>
+            <select id="costColumn"></select>
+          </div>
+          <div class="field">
+            <label for="listingIdColumn">VRBO Listing ID (Optional)</label>
+            <select id="listingIdColumn"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="generateBtn" class="primary">Generate Renewal Lists</button>
+        <button id="clearBtn" class="secondary">Clear</button>
+      </div>
+      <div id="status" class="status">Upload a CSV to begin. Records with blank expiration dates will be excluded from all renewal lists and totals.</div>
+    </section>
+
+    <section id="summary" class="panel summary">
+      <div class="summary-cards">
+        <div class="stat">
+          <div class="label">Renewal Month</div>
+          <div id="summaryMonth" class="value">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Units Due</div>
+          <div id="summaryUnits" class="value">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Annual Listing Fee</div>
+          <div id="summaryCost" class="value">$0.00</div>
+        </div>
+        <div class="stat">
+          <div class="label">OSMs</div>
+          <div id="summaryOsms" class="value">0</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div>
+          <div id="resultNote" class="status"></div>
+          <div class="search-wrap" style="margin-top:10px;">
+            <input id="unitSearch" type="search" placeholder="🔍 Search units or OSMs" />
+          </div>
+        </div>
+        <div class="button-row" style="margin-top:0;">
+          <button id="copyAllSlackBtn" class="outline">💬 Copy All Slack Messages</button>
+          <button id="copyAllAsanaBtn" class="primary">📋 Copy Entire Monthly Unit List</button>
+          <button onclick="window.print()" class="secondary">🖨 Print Summary</button>
+        </div>
+      </div>
+
+      <details id="issuesBox" class="hidden">
+        <summary id="issuesSummary">Data Issues</summary>
+        <ul id="issuesList" class="issues-list"></ul>
+      </details>
+    </section>
+
+    <main id="osmContainer" class="osm-container"></main>
+  </div>
+
+  <div id="toast" class="toast">Copied</div>
+
+  <script>
+    let rawRows = [];
+    let headers = [];
+    let generatedGroups = [];
+    let selectedMonthLabel = "";
+
+    const $ = (id) => document.getElementById(id);
+
+    const currency = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD"
+    });
+
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const next = text[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && next === '"') {
+            cell += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === "," && !inQuotes) {
+          row.push(cell);
+          cell = "";
+        } else if ((char === "\n" || char === "\r") && !inQuotes) {
+          if (char === "\r" && next === "\n") i++;
+          row.push(cell);
+          if (row.some(v => v.trim() !== "")) rows.push(row);
+          row = [];
+          cell = "";
+        } else {
+          cell += char;
+        }
+      }
+
+      row.push(cell);
+      if (row.some(v => v.trim() !== "")) rows.push(row);
+
+      if (!rows.length) return { headers: [], data: [] };
+
+      const headerRow = rows[0].map(h => h.trim());
+      const data = rows.slice(1).map(values => {
+        const obj = {};
+        headerRow.forEach((h, idx) => obj[h] = (values[idx] ?? "").trim());
+        return obj;
+      });
+
+      return { headers: headerRow, data };
+    }
+
+    function guessHeader(candidates) {
+      const normalized = headers.map(h => h.toLowerCase().trim());
+      for (const candidate of candidates) {
+        const exact = normalized.findIndex(h => h === candidate);
+        if (exact >= 0) return headers[exact];
+      }
+      for (const candidate of candidates) {
+        const partial = normalized.findIndex(h => h.includes(candidate));
+        if (partial >= 0) return headers[partial];
+      }
+      return headers[0] || "";
+    }
+
+    function fillSelect(selectId, includeBlank = false) {
+      const select = $(selectId);
+      select.innerHTML = "";
+      if (includeBlank) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "Not included";
+        select.appendChild(opt);
+      }
+      headers.forEach(h => {
+        const opt = document.createElement("option");
+        opt.value = h;
+        opt.textContent = h;
+        select.appendChild(opt);
+      });
+    }
+
+    function setGuesses() {
+      $("unitColumn").value = guessHeader(["unit / listing", "unit", "listing", "property"]);
+      $("osmColumn").value = guessHeader(["osm", "owner success manager", "manager"]);
+      $("dateColumn").value = guessHeader(["expires", "expiration date", "renewal date", "expiration"]);
+      $("costColumn").value = guessHeader(["annual subscription amount", "annual listing fee", "subscription amount", "cost", "amount"]);
+      const listingGuess = guessHeader(["vrbo listing id", "listing id", "vrbo id"]);
+      if (headers.map(h => h.toLowerCase()).some(h => h.includes("listing id") || h.includes("vrbo id"))) {
+        $("listingIdColumn").value = listingGuess;
+      } else {
+        $("listingIdColumn").value = "";
+      }
+    }
+
+    function parseDate(value) {
+      if (!value) return null;
+      const cleaned = String(value).trim();
+      if (!cleaned) return null;
+
+      const direct = new Date(cleaned);
+      if (!isNaN(direct.getTime())) return direct;
+
+      const parts = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+      if (parts) {
+        let year = Number(parts[3]);
+        if (year < 100) year += 2000;
+        const d = new Date(year, Number(parts[1]) - 1, Number(parts[2]));
+        return isNaN(d.getTime()) ? null : d;
+      }
+      return null;
+    }
+
+    function parseMoney(value) {
+      if (value == null || value === "") return 0;
+      const cleaned = String(value).replace(/[$,\s]/g, "").replace(/[()]/g, "");
+      const num = Number(cleaned);
+      if (isNaN(num)) return 0;
+      return String(value).includes("(") ? -num : num;
+    }
+
+    function monthKey(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    }
+
+    function prettyDate(date) {
+      return new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      }).format(date);
+    }
+
+    function monthLabel(key) {
+      const [year, month] = key.split("-").map(Number);
+      return new Intl.DateTimeFormat("en-US", {
+        month: "long",
+        year: "numeric"
+      }).format(new Date(year, month - 1, 1));
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function showToast(message) {
+      const toast = $("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1600);
+    }
+
+    async function copyText(text, message) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+      showToast(message || "Copied");
+    }
+
+    function buildSlackMessage(group) {
+      const firstName = group.osm.split(/\s+/)[0] || group.osm;
+      const lines = group.items.map(item => `☐ ${item.unit}`);
+
+      return [
+        `Hi ${firstName},`,
+        "",
+        `*${selectedMonthLabel} VRBO Annual Subscription Renewals*`,
+        "",
+        "Please review the units below and let me know if each annual VRBO subscription should be renewed.",
+        "",
+        ...lines,
+        "",
+        `*Total Units:* ${group.items.length}`,
+        `*Total Annual Listing Fees:* ${currency.format(group.totalCost)}`,
+        "",
+        "Thank you!"
+      ].join("\n");
+    }
+
+    function slackPreviewHTML(message) {
+      return escapeHTML(message)
+        .replace(/\*(.*?)\*/g, "<strong>$1</strong>")
+        .replace(/\n/g, "<br>");
+    }
+
+    function buildAsanaTasks(group) {
+      return group.items.map(item => item.unit).join("\n");
+    }
+
+    function renderGroups(groups) {
+      const container = $("osmContainer");
+      container.innerHTML = "";
+
+      if (!groups.length) {
+        container.innerHTML = `<section class="panel empty">No renewals were found for ${escapeHTML(selectedMonthLabel)}.</section>`;
+        return;
+      }
+
+      groups.forEach((group, groupIndex) => {
+        const card = document.createElement("section");
+        card.className = "osm-card";
+        card.dataset.search = `${group.osm} ${group.items.map(item => item.unit).join(" ")}`.toLowerCase();
+
+        const rows = group.items.map(item => `
+          <tr>
+            <td>${escapeHTML(item.unit)}</td>
+            <td>${escapeHTML(prettyDate(item.expires))}</td>
+            <td class="amount">${escapeHTML(currency.format(item.cost))}</td>
+            <td>${escapeHTML(item.listingId || "")}</td>
+          </tr>
+        `).join("");
+
+        const slackMessage = buildSlackMessage(group);
+        const asanaTasks = buildAsanaTasks(group);
+
+        card.innerHTML = `
+          <div class="osm-header" data-toggle-card>
+            <div>
+              <div class="osm-title-row">
+                <span class="chevron">▼</span>
+                <h2>${escapeHTML(group.osm)}</h2>
+              </div>
+              <div class="osm-meta">${group.items.length} unit${group.items.length === 1 ? "" : "s"} • ${currency.format(group.totalCost)}</div>
+            </div>
+          </div>
+
+          <div class="osm-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Unit / Listing</th>
+                    <th>Expiration Date</th>
+                    <th class="amount">Annual Listing Fee</th>
+                    <th>VRBO Listing ID</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+
+            <div class="preview-grid">
+              <section class="preview-card">
+                <div class="preview-card-header">💬 Slack Preview</div>
+                <div class="slack-preview">${slackPreviewHTML(slackMessage)}</div>
+                <div class="preview-actions">
+                  <button class="primary" data-action="slack" data-index="${groupIndex}">💬 Copy Slack Approval Message</button>
+                </div>
+              </section>
+
+              <section class="preview-card">
+                <div class="preview-card-header">✅ Asana Preview</div>
+                <div class="asana-preview">${escapeHTML(asanaTasks)}</div>
+                <div class="preview-actions">
+                  <button class="outline" data-action="asana" data-index="${groupIndex}">✅ Copy Asana Unit Tasks</button>
+                </div>
+              </section>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      container.querySelectorAll("[data-toggle-card]").forEach(header => {
+        header.addEventListener("click", (event) => {
+          if (event.target.closest("button")) return;
+          header.closest(".osm-card").classList.toggle("collapsed");
+        });
+      });
+
+      container.querySelectorAll("button[data-action]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const group = generatedGroups[Number(btn.dataset.index)];
+          if (btn.dataset.action === "slack") {
+            copyText(buildSlackMessage(group), `${group.osm} Slack message copied`);
+          } else {
+            copyText(buildAsanaTasks(group), `${group.osm} Asana tasks copied`);
+          }
+        });
+      });
+    }
+
+    function generate() {
+      const selectedMonth = $("renewalMonth").value;
+      if (!rawRows.length) {
+        $("status").textContent = "Upload a CSV before generating the renewal lists.";
+        $("status").className = "status error";
+        return;
+      }
+      if (!selectedMonth) {
+        $("status").textContent = "Select a renewal month.";
+        $("status").className = "status error";
+        return;
+      }
+
+      const unitCol = $("unitColumn").value;
+      const osmCol = $("osmColumn").value;
+      const dateCol = $("dateColumn").value;
+      const costCol = $("costColumn").value;
+      const listingCol = $("listingIdColumn").value;
+
+      const issues = [];
+      const grouped = new Map();
+      let blankExpirationCount = 0;
+
+      rawRows.forEach((row, index) => {
+        const unit = (row[unitCol] || "").trim();
+        const osm = (row[osmCol] || "").trim();
+        const rawDate = (row[dateCol] || "").trim();
+        const date = parseDate(rawDate);
+
+        if (!rawDate) {
+          blankExpirationCount++;
+          return;
+        }
+
+        if (!date) {
+          issues.push(`Row ${index + 2}: invalid expiration date for ${unit || "unnamed unit"} (${rawDate}).`);
+          return;
+        }
+
+        if (monthKey(date) !== selectedMonth) return;
+
+        if (!unit) issues.push(`Row ${index + 2}: missing Unit / Listing.`);
+        if (!osm) issues.push(`Row ${index + 2}: ${unit || "Unnamed unit"} is missing an OSM.`);
+
+        const groupName = osm || "Unassigned OSM";
+        const item = {
+          unit: unit || `Unnamed Unit (Row ${index + 2})`,
+          osm: groupName,
+          expires: date,
+          cost: parseMoney(row[costCol]),
+          listingId: listingCol ? (row[listingCol] || "").trim() : ""
+        };
+
+        if (!grouped.has(groupName)) grouped.set(groupName, []);
+        grouped.get(groupName).push(item);
+      });
+
+      generatedGroups = Array.from(grouped.entries()).map(([osm, items]) => {
+        items.sort((a, b) => a.expires - b.expires || a.unit.localeCompare(b.unit));
+        return {
+          osm,
+          items,
+          totalCost: items.reduce((sum, item) => sum + item.cost, 0)
+        };
+      }).sort((a, b) => a.osm.localeCompare(b.osm));
+
+      selectedMonthLabel = monthLabel(selectedMonth);
+
+      const totalUnits = generatedGroups.reduce((sum, group) => sum + group.items.length, 0);
+      const totalCost = generatedGroups.reduce((sum, group) => sum + group.totalCost, 0);
+
+      $("summaryMonth").textContent = selectedMonthLabel;
+      $("summaryUnits").textContent = totalUnits.toLocaleString("en-US");
+      $("summaryCost").textContent = currency.format(totalCost);
+      $("summaryOsms").textContent = generatedGroups.length.toLocaleString("en-US");
+      $("resultNote").textContent = `${totalUnits} renewal${totalUnits === 1 ? "" : "s"} found across ${generatedGroups.length} OSM${generatedGroups.length === 1 ? "" : "s"}.`;
+      $("summary").style.display = "block";
+
+      const issuesBox = $("issuesBox");
+      const issuesList = $("issuesList");
+      issuesList.innerHTML = "";
+
+      if (blankExpirationCount > 0) {
+        issues.push(`${blankExpirationCount} record${blankExpirationCount === 1 ? "" : "s"} with blank expiration dates were excluded.`);
+      }
+
+      if (issues.length) {
+        $("issuesSummary").textContent = `Data Issues (${issues.length})`;
+        issues.forEach(issue => {
+          const li = document.createElement("li");
+          li.textContent = issue;
+          issuesList.appendChild(li);
+        });
+        issuesBox.classList.remove("hidden");
+      } else {
+        issuesBox.classList.add("hidden");
+      }
+
+      renderGroups(generatedGroups);
+      $("status").textContent = `Generated ${selectedMonthLabel} renewal lists successfully.`;
+      $("status").className = "status";
+    }
+
+    $("csvFile").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const parsed = parseCSV(text);
+        headers = parsed.headers;
+        rawRows = parsed.data;
+
+        if (!headers.length || !rawRows.length) {
+          throw new Error("The CSV appears to be empty.");
+        }
+
+        ["unitColumn", "osmColumn", "dateColumn", "costColumn"].forEach(id => fillSelect(id));
+        fillSelect("listingIdColumn", true);
+        setGuesses();
+
+        $("mapping").style.display = "block";
+        $("status").textContent = `${rawRows.length.toLocaleString("en-US")} records loaded. Confirm the column selections, choose a month, and generate.`;
+        $("status").className = "status";
+      } catch (error) {
+        rawRows = [];
+        headers = [];
+        $("mapping").style.display = "none";
+        $("status").textContent = `Unable to read the CSV: ${error.message}`;
+        $("status").className = "status error";
+      }
+    });
+
+    $("generateBtn").addEventListener("click", generate);
+
+    $("clearBtn").addEventListener("click", () => {
+      rawRows = [];
+      headers = [];
+      generatedGroups = [];
+      $("csvFile").value = "";
+      $("mapping").style.display = "none";
+      $("summary").style.display = "none";
+      $("osmContainer").innerHTML = "";
+      $("unitSearch").value = "";
+      $("status").textContent = "Upload a CSV to begin. Records with blank expiration dates will be excluded from all renewal lists and totals.";
+      $("status").className = "status";
+    });
+
+    $("copyAllAsanaBtn").addEventListener("click", () => {
+      const text = generatedGroups
+        .flatMap(group => group.items.map(item => item.unit))
+        .join("\n");
+      copyText(text, "Entire unit list copied for Asana");
+    });
+
+    $("copyAllSlackBtn").addEventListener("click", () => {
+      const text = generatedGroups
+        .map(group => buildSlackMessage(group))
+        .join("\n\n----------------------------------------\n\n");
+      copyText(text, "All Slack messages copied");
+    });
+
+
+    $("unitSearch").addEventListener("input", (event) => {
+      const query = event.target.value.trim().toLowerCase();
+      document.querySelectorAll(".osm-card").forEach(card => {
+        card.classList.toggle("no-match", query && !card.dataset.search.includes(query));
+      });
+    });
+
+    const today = new Date();
+    $("renewalMonth").value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+  </script>
+</body>
+</html>
