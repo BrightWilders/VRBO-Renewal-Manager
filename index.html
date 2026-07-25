@@ -148,12 +148,6 @@
 
     .status.error { color: var(--danger); }
 
-    .mapping {
-      display: none;
-      margin-top: 18px;
-      border-top: 1px solid var(--line);
-      padding-top: 18px;
-    }
 
     .summary {
       display: none;
@@ -539,37 +533,11 @@
         </div>
       </div>
 
-      <div id="mapping" class="mapping">
-        <h3 style="margin-top:0;">Confirm CSV Columns</h3>
-        <div class="grid">
-          <div class="field">
-            <label for="unitColumn">Unit / Listing</label>
-            <select id="unitColumn"></select>
-          </div>
-          <div class="field">
-            <label for="osmColumn">OSM</label>
-            <select id="osmColumn"></select>
-          </div>
-          <div class="field">
-            <label for="dateColumn">Expiration Date</label>
-            <select id="dateColumn"></select>
-          </div>
-          <div class="field">
-            <label for="costColumn">Annual Listing Fee</label>
-            <select id="costColumn"></select>
-          </div>
-          <div class="field">
-            <label for="listingIdColumn">VRBO Listing ID (Optional)</label>
-            <select id="listingIdColumn"></select>
-          </div>
-        </div>
-      </div>
-
       <div class="button-row">
         <button id="generateBtn" class="primary">Generate Renewal Lists</button>
         <button id="clearBtn" class="secondary">Clear</button>
       </div>
-      <div id="status" class="status">Upload a CSV to begin. Records with blank expiration dates will be excluded from all renewal lists and totals.</div>
+      <div id="status" class="status">Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates will be excluded.</div>
     </section>
 
     <section id="summary" class="panel summary">
@@ -622,6 +590,13 @@
     let headers = [];
     let generatedGroups = [];
     let selectedMonthLabel = "";
+    let detectedColumns = {
+      unit: "",
+      osm: "",
+      date: "",
+      cost: "",
+      listingId: ""
+    };
 
     const $ = (id) => document.getElementById(id);
 
@@ -686,37 +661,51 @@
         const partial = normalized.findIndex(h => h.includes(candidate));
         if (partial >= 0) return headers[partial];
       }
-      return headers[0] || "";
+      return "";
     }
 
-    function fillSelect(selectId, includeBlank = false) {
-      const select = $(selectId);
-      select.innerHTML = "";
-      if (includeBlank) {
-        const opt = document.createElement("option");
-        opt.value = "";
-        opt.textContent = "Not included";
-        select.appendChild(opt);
-      }
-      headers.forEach(h => {
-        const opt = document.createElement("option");
-        opt.value = h;
-        opt.textContent = h;
-        select.appendChild(opt);
-      });
-    }
+    function detectColumns() {
+      detectedColumns = {
+        unit: guessHeader(["unit / listing", "unit", "listing", "property"]),
+        osm: guessHeader(["osm", "owner success manager", "manager"]),
+        date: guessHeader(["expires", "expiration date", "renewal date", "expiration"]),
+        cost: guessHeader([
+          "annual listing fee",
+          "annual subscription amount",
+          "subscription amount",
+          "annual fee",
+          "listing fee",
+          "cost",
+          "amount"
+        ]),
+        listingId: ""
+      };
 
-    function setGuesses() {
-      $("unitColumn").value = guessHeader(["unit / listing", "unit", "listing", "property"]);
-      $("osmColumn").value = guessHeader(["osm", "owner success manager", "manager"]);
-      $("dateColumn").value = guessHeader(["expires", "expiration date", "renewal date", "expiration"]);
-      $("costColumn").value = guessHeader(["annual subscription amount", "annual listing fee", "subscription amount", "cost", "amount"]);
-      const listingGuess = guessHeader(["vrbo listing id", "listing id", "vrbo id"]);
-      if (headers.map(h => h.toLowerCase()).some(h => h.includes("listing id") || h.includes("vrbo id"))) {
-        $("listingIdColumn").value = listingGuess;
-      } else {
-        $("listingIdColumn").value = "";
+      const normalizedHeaders = headers.map(h => h.toLowerCase().trim());
+      const listingIndex = normalizedHeaders.findIndex(h =>
+        h === "vrbo listing id" ||
+        h === "listing id" ||
+        h === "vrbo id" ||
+        h.includes("vrbo listing id") ||
+        h.includes("vrbo id")
+      );
+
+      if (listingIndex >= 0) {
+        detectedColumns.listingId = headers[listingIndex];
       }
+
+      const required = [
+        ["Unit / Listing", detectedColumns.unit],
+        ["OSM", detectedColumns.osm],
+        ["Expiration Date", detectedColumns.date],
+        ["Annual Listing Fee", detectedColumns.cost]
+      ];
+
+      const missing = required
+        .filter(([, header]) => !header || !headers.includes(header))
+        .map(([label]) => label);
+
+      return missing;
     }
 
     function parseDate(value) {
@@ -990,11 +979,11 @@
         return;
       }
 
-      const unitCol = $("unitColumn").value;
-      const osmCol = $("osmColumn").value;
-      const dateCol = $("dateColumn").value;
-      const costCol = $("costColumn").value;
-      const listingCol = $("listingIdColumn").value;
+      const unitCol = detectedColumns.unit;
+      const osmCol = detectedColumns.osm;
+      const dateCol = detectedColumns.date;
+      const costCol = detectedColumns.cost;
+      const listingCol = detectedColumns.listingId;
 
       const issues = [];
       const grouped = new Map();
@@ -1095,17 +1084,21 @@
           throw new Error("The CSV appears to be empty.");
         }
 
-        ["unitColumn", "osmColumn", "dateColumn", "costColumn"].forEach(id => fillSelect(id));
-        fillSelect("listingIdColumn", true);
-        setGuesses();
+        const missingColumns = detectColumns();
+        if (missingColumns.length) {
+          rawRows = [];
+          throw new Error(
+            `The CSV is missing the following expected column${missingColumns.length === 1 ? "" : "s"}: ${missingColumns.join(", ")}.`
+          );
+        }
 
-        $("mapping").style.display = "block";
-        $("status").textContent = `${rawRows.length.toLocaleString("en-US")} records loaded. Confirm the column selections, choose a month, and generate.`;
+        $("status").textContent =
+          `${rawRows.length.toLocaleString("en-US")} records loaded. Select the renewal month and generate.`;
         $("status").className = "status";
       } catch (error) {
         rawRows = [];
         headers = [];
-        $("mapping").style.display = "none";
+        detectedColumns = { unit: "", osm: "", date: "", cost: "", listingId: "" };
         $("status").textContent = `Unable to read the CSV: ${error.message}`;
         $("status").className = "status error";
       }
@@ -1117,13 +1110,13 @@
       rawRows = [];
       headers = [];
       generatedGroups = [];
+      detectedColumns = { unit: "", osm: "", date: "", cost: "", listingId: "" };
       $("csvFile").value = "";
-      $("mapping").style.display = "none";
       $("summary").style.display = "none";
       $("osmContainer").innerHTML = "";
       $("printSummary").innerHTML = "";
       $("unitSearch").value = "";
-      $("status").textContent = "Upload a CSV to begin. Records with blank expiration dates will be excluded from all renewal lists and totals.";
+      $("status").textContent = "Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates will be excluded.";
       $("status").className = "status";
     });
 
