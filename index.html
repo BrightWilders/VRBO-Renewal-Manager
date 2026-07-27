@@ -499,6 +499,16 @@
       overflow: hidden;
     }
 
+
+    .print-osm-header td {
+      font-weight: 800;
+      background: #eef3f7;
+      border-top: 2px solid #94a3b8;
+      border-bottom: 1px solid #cbd5e1;
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+
     .print-summary {
       display: none;
     }
@@ -1233,58 +1243,83 @@
     }
 
     function renderPrintSummary(groups) {
-      const allItems = groups.flatMap(group =>
-        group.items.map(item => ({ ...item, osm: group.osm }))
-      ).sort((a, b) => {
-        const dateCompare = a.expires - b.expires;
-        if (dateCompare !== 0) return dateCompare;
-        return a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: "base" });
+      const selectedMonth = $("renewalMonth").value;
+      const selectedLabel = monthLabel(selectedMonth);
+      const allItems = groups.flatMap(group => group.items);
+
+      const sortedItems = [...allItems].sort((a, b) => {
+        const osmCompare = a.osm.localeCompare(b.osm, undefined, {
+          sensitivity: "base"
+        });
+        if (osmCompare !== 0) return osmCompare;
+
+        const aTime = a.expires ? a.expires.getTime() : Number.MAX_SAFE_INTEGER;
+        const bTime = b.expires ? b.expires.getTime() : Number.MAX_SAFE_INTEGER;
+        if (aTime !== bTime) return aTime - bTime;
+
+        return a.unit.localeCompare(b.unit, undefined, {
+          numeric: true,
+          sensitivity: "base"
+        });
       });
 
-      const totalFees = allItems.reduce((sum, item) => sum + item.cost, 0);
+      const totalFees = sortedItems.reduce((sum, item) => sum + item.cost, 0);
 
-      const detailRows = allItems.map(item => `
-        <tr>
-          <td>${escapeHTML(item.unit)}</td>
-          <td>${escapeHTML(prettyDate(item.expires))}</td>
-          <td class="amount">${escapeHTML(currency.format(item.cost))}</td>
-          <td>${escapeHTML(item.listingId || "")}</td>
-          <td>${escapeHTML(item.osm)}</td>
-        </tr>
-      `).join("");
+      let currentOSM = "";
+      const rows = sortedItems.map(item => {
+        const osmHeader = item.osm !== currentOSM
+          ? `<tr class="print-osm-header">
+               <td colspan="5">${escapeHTML(item.osm)}</td>
+             </tr>`
+          : "";
+
+        currentOSM = item.osm;
+
+        return `
+          ${osmHeader}
+          <tr>
+            <td>${escapeHTML(item.unit)}</td>
+            <td>${item.expires ? escapeHTML(prettyDate(item.expires)) : "—"}</td>
+            <td>${escapeHTML(currency.format(item.cost))}</td>
+            <td>${escapeHTML(item.listingId || "")}</td>
+            <td>${escapeHTML(item.osm)}</td>
+          </tr>
+        `;
+      }).join("");
 
       $("printSummary").innerHTML = `
-        <h1>VRBO Renewal Summary</h1>
-        <div class="print-subtitle">Renewal Month: ${escapeHTML(selectedMonthLabel)}</div>
+        <div class="print-report">
+          <div class="print-title">VRBO Annual Subscription Renewals</div>
+          <div class="print-subtitle">${escapeHTML(selectedLabel)}</div>
 
-        <div class="print-kpis">
-          <div class="print-kpi">
-            <div class="label">Renewal Month</div>
-            <div class="value">${escapeHTML(selectedMonthLabel)}</div>
+          <div class="print-metrics">
+            <div class="print-metric">
+              <span>Renewal Month</span>
+              <strong>${escapeHTML(selectedLabel)}</strong>
+            </div>
+            <div class="print-metric">
+              <span>Units Due</span>
+              <strong>${sortedItems.length}</strong>
+            </div>
+            <div class="print-metric">
+              <span>Annual Listing Fees</span>
+              <strong>${escapeHTML(currency.format(totalFees))}</strong>
+            </div>
           </div>
-          <div class="print-kpi">
-            <div class="label">Units Due</div>
-            <div class="value">${allItems.length}</div>
-          </div>
-          <div class="print-kpi">
-            <div class="label">Annual Listing Fees</div>
-            <div class="value">${escapeHTML(currency.format(totalFees))}</div>
-          </div>
+
+          <table class="print-table">
+            <thead>
+              <tr>
+                <th>Unit / Listing</th>
+                <th>Expiration Date</th>
+                <th>Annual Listing Fee</th>
+                <th>VRBO Listing ID</th>
+                <th>OSM</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
         </div>
-
-        <h2 class="print-section-title">Renewal Detail</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Unit / Listing</th>
-              <th>Expiration Date</th>
-              <th class="amount">Annual Listing Fee</th>
-              <th>VRBO Listing ID</th>
-              <th>OSM</th>
-            </tr>
-          </thead>
-          <tbody>${detailRows}</tbody>
-        </table>
       `;
     }
 
