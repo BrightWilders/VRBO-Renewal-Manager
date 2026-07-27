@@ -413,6 +413,92 @@
       .preview-grid { grid-template-columns: 1fr; }
     }
 
+
+    .review-launch {
+      display: none;
+    }
+
+    .review-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(15, 23, 42, 0.55);
+      padding: 28px;
+      overflow: auto;
+    }
+
+    .review-modal.open {
+      display: block;
+    }
+
+    .review-window {
+      max-width: 1180px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+      overflow: hidden;
+    }
+
+    .review-window-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--line);
+      background: #f8fafc;
+    }
+
+    .review-window-header h2 {
+      margin: 0 0 5px;
+    }
+
+    .review-window-header p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .review-window-body {
+      padding: 20px 22px 24px;
+    }
+
+    .review-window-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .review-count {
+      font-weight: 800;
+      color: var(--brand);
+    }
+
+    .review-empty {
+      padding: 22px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      background: #fbfcfe;
+    }
+
+    .close-review {
+      border: 0;
+      background: transparent;
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      color: #475569;
+      padding: 2px 6px;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
     .print-summary {
       display: none;
     }
@@ -427,6 +513,7 @@
       .panel.setup,
       #summary,
       #osmContainer,
+      #reviewModal,
       .toast {
         display: none !important;
       }
@@ -568,19 +655,38 @@
           </div>
         </div>
         <div class="button-row" style="margin-top:0;">
+          <button id="openReviewBtn" class="outline review-launch">⚠️ Review Required (0)</button>
           <button id="copyAllAsanaBtn" class="primary">📋 Copy Entire Monthly Unit List</button>
           <button onclick="window.print()" class="secondary">🖨 Print Summary</button>
         </div>
       </div>
 
-      <details id="issuesBox" class="hidden">
-        <summary id="issuesSummary">Data Issues</summary>
-        <ul id="issuesList" class="issues-list"></ul>
-      </details>
     </section>
 
     <main id="osmContainer" class="osm-container"></main>
+
     <section id="printSummary" class="print-summary"></section>
+  </div>
+
+
+  <div id="reviewModal" class="review-modal" aria-hidden="true">
+    <div class="review-window" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+      <div class="review-window-header">
+        <div>
+          <h2 id="reviewTitle">VRBO Exception Report</h2>
+          <p>The listings below are not Active and were excluded from the renewal process. This window is not included in the printed summary.</p>
+        </div>
+        <button id="closeReviewBtn" class="close-review" aria-label="Close review window">×</button>
+      </div>
+      <div class="review-window-body">
+        <div class="review-window-actions">
+          <button id="copyReviewBtn" class="outline">📋 Copy Review List</button>
+          <button id="downloadReviewBtn" class="primary">⬇️ Download Excel File</button>
+        </div>
+        <div id="reviewNote" class="status"></div>
+        <div id="reviewContent"></div>
+      </div>
+    </div>
   </div>
 
   <div id="toast" class="toast">Copied</div>
@@ -589,13 +695,17 @@
     let rawRows = [];
     let headers = [];
     let generatedGroups = [];
+    let generatedReviewRows = [];
+    let generatedNonActiveRows = [];
     let selectedMonthLabel = "";
     let detectedColumns = {
       unit: "",
       osm: "",
       date: "",
       cost: "",
-      listingId: ""
+      listingId: "",
+      status: "",
+      issue: ""
     };
 
     const $ = (id) => document.getElementById(id);
@@ -693,6 +803,21 @@
       if (listingIndex >= 0) {
         detectedColumns.listingId = headers[listingIndex];
       }
+
+      detectedColumns.status = guessHeader([
+        "status",
+        "listing status",
+        "subscription status",
+        "vrbo status"
+      ]);
+
+      detectedColumns.issue = guessHeader([
+        "issues",
+        "issue",
+        "notes",
+        "renewal notes",
+        "issue notes"
+      ]);
 
       const required = [
         ["Unit / Listing", detectedColumns.unit],
@@ -910,6 +1035,203 @@
     }
 
 
+
+    function buildReviewRows() {
+      const unitCol = detectedColumns.unit;
+      const osmCol = detectedColumns.osm;
+      const dateCol = detectedColumns.date;
+      const costCol = detectedColumns.cost;
+      const listingCol = detectedColumns.listingId;
+      const statusCol = detectedColumns.status;
+
+      generatedNonActiveRows = [];
+
+      rawRows.forEach((row, index) => {
+        const status = statusCol ? (row[statusCol] || "").trim() : "";
+        const normalizedStatus = status.toLowerCase();
+
+        if (!status || normalizedStatus === "active") return;
+
+        const expires = parseDate((row[dateCol] || "").trim());
+
+        generatedNonActiveRows.push({
+          unit: (row[unitCol] || "").trim() || `Unnamed Unit (Row ${index + 2})`,
+          osm: (row[osmCol] || "").trim() || "Unassigned OSM",
+          status,
+          expires,
+          renewalMonth: expires ? monthLabel(monthKey(expires)) : "—",
+          cost: parseMoney(row[costCol]),
+          listingId: listingCol ? (row[listingCol] || "").trim() : ""
+        });
+      });
+
+      generatedNonActiveRows.sort((a, b) => {
+        const osmCompare = a.osm.localeCompare(b.osm);
+        return osmCompare || a.unit.localeCompare(b.unit, undefined, {
+          numeric: true,
+          sensitivity: "base"
+        });
+      });
+
+      generatedReviewRows = [...generatedNonActiveRows];
+    }
+
+    function buildReviewCopyText() {
+      if (!generatedNonActiveRows.length) return "No listings require review.";
+
+      const lines = [
+        "*VRBO Non-Active Listings*",
+        "",
+        `*Total Listings:* ${generatedNonActiveRows.length}`,
+        ""
+      ];
+
+      generatedNonActiveRows.forEach(item => {
+        lines.push(
+          `• ${item.unit} — Status: ${item.status} | OSM: ${item.osm} | Renewal Month: ${item.renewalMonth} | Annual Listing Fee: ${currency.format(item.cost)}`
+        );
+      });
+
+      return lines.join("\n");
+    }
+
+    function renderPersonalReview() {
+      const content = $("reviewContent");
+      const note = $("reviewNote");
+      const launchButton = $("openReviewBtn");
+      const total = generatedNonActiveRows.length;
+
+      if (total > 0) {
+        launchButton.style.display = "inline-flex";
+        launchButton.textContent = `⚠️ Review Required (${total})`;
+      } else {
+        launchButton.style.display = "none";
+      }
+
+      $("copyReviewBtn").disabled = total === 0;
+      $("downloadReviewBtn").disabled = total === 0;
+
+      note.innerHTML = `<span class="review-count">${total}</span> non-active listing${total === 1 ? "" : "s"} excluded from the renewal process.`;
+
+      if (!total) {
+        content.innerHTML = `<div class="review-empty">No non-active listings require review.</div>`;
+        return;
+      }
+
+      content.innerHTML = `
+        <section style="margin-top:18px;">
+          <h3 style="margin:0 0 6px;">🚫 Non-Active Listings (${total})</h3>
+          <div class="table-wrap" style="margin-top:12px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Unit / Listing</th>
+                  <th>VRBO Listing ID</th>
+                  <th>Status</th>
+                  <th>OSM</th>
+                  <th>Renewal Month</th>
+                  <th>Annual Listing Fee</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${generatedNonActiveRows.map(item => `
+                  <tr>
+                    <td>${escapeHTML(item.unit)}</td>
+                    <td>${escapeHTML(item.listingId || "")}</td>
+                    <td>${escapeHTML(item.status)}</td>
+                    <td>${escapeHTML(item.osm)}</td>
+                    <td>${escapeHTML(item.renewalMonth)}</td>
+                    <td>${escapeHTML(currency.format(item.cost))}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+
+    function downloadReviewExcel() {
+      if (!generatedNonActiveRows.length) return;
+
+      const xmlEscape = value => String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+
+      const cell = (value, style = "") =>
+        `<Cell${style ? ` ss:StyleID="${style}"` : ""}><Data ss:Type="String">${xmlEscape(value)}</Data></Cell>`;
+      const row = values => `<Row>${values.map(value => cell(value)).join("")}</Row>`;
+      const headerRow = values => `<Row>${values.map(value => cell(value, "Header")).join("")}</Row>`;
+
+      const summaryRows = [
+        row(["Generated", new Date().toLocaleDateString("en-US")]),
+        row(["Total Non-Active Listings", generatedNonActiveRows.length])
+      ].join("");
+
+      const nonActiveRows = generatedNonActiveRows.map(item => row([
+        item.unit,
+        item.listingId || "",
+        item.status,
+        item.osm,
+        item.renewalMonth,
+        currency.format(item.cost)
+      ])).join("");
+
+      const workbook = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Bottom"/></Style>
+  <Style ss:ID="Header"><Font ss:Bold="1"/><Interior ss:Color="#E2E8F0" ss:Pattern="Solid"/></Style>
+ </Styles>
+ <Worksheet ss:Name="Summary">
+  <Table>
+   <Column ss:Width="220"/><Column ss:Width="130"/>
+   ${headerRow(["Review Summary", "Count / Date"])}
+   ${summaryRows}
+  </Table>
+ </Worksheet>
+ <Worksheet ss:Name="Non-Active Listings">
+  <Table>
+   <Column ss:Width="180"/><Column ss:Width="130"/><Column ss:Width="110"/>
+   <Column ss:Width="140"/><Column ss:Width="120"/><Column ss:Width="130"/>
+   ${headerRow(["Unit / Listing", "VRBO Listing ID", "Status", "OSM", "Renewal Month", "Annual Listing Fee"])}
+   ${nonActiveRows}
+  </Table>
+ </Worksheet>
+</Workbook>`;
+
+      const blob = new Blob([workbook], { type: "application/vnd.ms-excel;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const today = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.download = `VRBO-Non-Active-Listings-${today}.xls`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showToast("Excel file downloaded");
+    }
+
+    function openReviewModal() {
+      $("reviewModal").classList.add("open");
+      $("reviewModal").setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+    }
+
+    function closeReviewModal() {
+      $("reviewModal").classList.remove("open");
+      $("reviewModal").setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+    }
+
     function renderPrintSummary(groups) {
       const allItems = groups.flatMap(group =>
         group.items.map(item => ({ ...item, osm: group.osm }))
@@ -1007,6 +1329,10 @@
 
         if (monthKey(date) !== selectedMonth) return;
 
+        const statusCol = detectedColumns.status;
+        const status = statusCol ? (row[statusCol] || "").trim().toLowerCase() : "active";
+        if (status !== "active") return;
+
         if (!unit) issues.push(`Row ${index + 2}: missing Unit / Listing.`);
         if (!osm) issues.push(`Row ${index + 2}: ${unit || "Unnamed unit"} is missing an OSM.`);
 
@@ -1044,27 +1370,9 @@
       $("resultNote").textContent = `${totalUnits} renewal${totalUnits === 1 ? "" : "s"} found across ${generatedGroups.length} OSM${generatedGroups.length === 1 ? "" : "s"}.`;
       $("summary").style.display = "block";
 
-      const issuesBox = $("issuesBox");
-      const issuesList = $("issuesList");
-      issuesList.innerHTML = "";
-
-      if (blankExpirationCount > 0) {
-        issues.push(`${blankExpirationCount} record${blankExpirationCount === 1 ? "" : "s"} with blank expiration dates were excluded.`);
-      }
-
-      if (issues.length) {
-        $("issuesSummary").textContent = `Data Issues (${issues.length})`;
-        issues.forEach(issue => {
-          const li = document.createElement("li");
-          li.textContent = issue;
-          issuesList.appendChild(li);
-        });
-        issuesBox.classList.remove("hidden");
-      } else {
-        issuesBox.classList.add("hidden");
-      }
-
       renderGroups(generatedGroups);
+      buildReviewRows();
+      renderPersonalReview();
       renderPrintSummary(generatedGroups);
       $("status").textContent = `Generated ${selectedMonthLabel} renewal lists successfully.`;
       $("status").className = "status";
@@ -1098,7 +1406,7 @@
       } catch (error) {
         rawRows = [];
         headers = [];
-        detectedColumns = { unit: "", osm: "", date: "", cost: "", listingId: "" };
+        detectedColumns = { unit: "", osm: "", date: "", cost: "", listingId: "", status: "", issue: "" };
         $("status").textContent = `Unable to read the CSV: ${error.message}`;
         $("status").className = "status error";
       }
@@ -1110,11 +1418,18 @@
       rawRows = [];
       headers = [];
       generatedGroups = [];
-      detectedColumns = { unit: "", osm: "", date: "", cost: "", listingId: "" };
+      generatedReviewRows = [];
+      generatedNonActiveRows = [];
+      detectedColumns = { unit: "", osm: "", date: "", cost: "", listingId: "", status: "", issue: "" };
       $("csvFile").value = "";
       $("summary").style.display = "none";
       $("osmContainer").innerHTML = "";
       $("printSummary").innerHTML = "";
+      $("openReviewBtn").style.display = "none";
+      $("openReviewBtn").textContent = "⚠️ Review Required (0)";
+      $("reviewContent").innerHTML = "";
+      $("reviewNote").textContent = "";
+      closeReviewModal();
       $("unitSearch").value = "";
       $("status").textContent = "Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates will be excluded.";
       $("status").className = "status";
@@ -1127,6 +1442,22 @@
       copyText(text, "Entire unit list copied for Asana");
     });
 
+
+    $("openReviewBtn").addEventListener("click", openReviewModal);
+    $("closeReviewBtn").addEventListener("click", closeReviewModal);
+    $("downloadReviewBtn").addEventListener("click", downloadReviewExcel);
+
+    $("reviewModal").addEventListener("click", (event) => {
+      if (event.target === $("reviewModal")) closeReviewModal();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeReviewModal();
+    });
+
+    $("copyReviewBtn").addEventListener("click", () => {
+      copyText(buildReviewCopyText(), "Review list copied");
+    });
 
     $("unitSearch").addEventListener("input", (event) => {
       const query = event.target.value.trim().toLowerCase();
