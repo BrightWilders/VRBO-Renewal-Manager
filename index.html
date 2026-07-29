@@ -978,14 +978,8 @@
               </table>
             </div>
 
-            <div class="preview-grid">
-              <section class="preview-card">
-                <div class="preview-card-header">✅ Asana Preview</div>
-                <div class="asana-preview">${escapeHTML(asanaTasks)}</div>
-                <div class="preview-actions">
-                  <button class="outline" data-action="asana" data-index="${groupIndex}">✅ Copy Asana Unit Tasks</button>
-                </div>
-              </section>
+            <div class="button-row" style="margin-top:4px;">
+              <button class="outline" data-action="asana" data-index="${groupIndex}">✅ Copy Asana Unit Tasks</button>
             </div>
           </div>
         `;
@@ -1428,6 +1422,7 @@
       $("status").textContent = "Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or an OSM of N/A will be excluded.";
       $("status").className = "status";
     });
+
 
     $("copyAllAsanaBtn").addEventListener("click", () => {
       const text = generatedGroups
