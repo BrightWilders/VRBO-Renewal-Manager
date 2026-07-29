@@ -357,7 +357,7 @@
 
     .preview-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+      grid-template-columns: 1fr;
       gap: 16px;
       margin-top: 18px;
     }
@@ -922,31 +922,6 @@
       showToast(message || "Copied");
     }
 
-    function buildSlackMessage(group) {
-      const firstName = group.osm.split(/\s+/)[0] || group.osm;
-      const lines = group.items.map(item => `☐ ${item.unit}`);
-
-      return [
-        `Hi ${firstName},`,
-        "",
-        `*${selectedMonthLabel} VRBO Annual Subscription Renewals*`,
-        "",
-        "Please review the units below and let me know if each annual VRBO subscription should be renewed.",
-        "",
-        ...lines,
-        "",
-        `*Total Units:* ${group.items.length}`,
-        `*Total Annual Listing Fees:* ${currency.format(group.totalCost)}`,
-        "",
-        "Thank you!"
-      ].join("\n");
-    }
-
-    function slackPreviewHTML(message) {
-      return escapeHTML(message)
-        .replace(/\*(.*?)\*/g, "<strong>$1</strong>")
-        .replace(/\n/g, "<br>");
-    }
 
     function buildAsanaTasks(group) {
       return group.items.map(item => item.unit).join("\n");
@@ -975,7 +950,6 @@
           </tr>
         `).join("");
 
-        const slackMessage = buildSlackMessage(group);
         const asanaTasks = buildAsanaTasks(group);
 
         card.innerHTML = `
@@ -1006,14 +980,6 @@
 
             <div class="preview-grid">
               <section class="preview-card">
-                <div class="preview-card-header">💬 Slack Preview</div>
-                <div class="slack-preview">${slackPreviewHTML(slackMessage)}</div>
-                <div class="preview-actions">
-                  <button class="primary" data-action="slack" data-index="${groupIndex}">💬 Copy Slack Approval Message</button>
-                </div>
-              </section>
-
-              <section class="preview-card">
                 <div class="preview-card-header">✅ Asana Preview</div>
                 <div class="asana-preview">${escapeHTML(asanaTasks)}</div>
                 <div class="preview-actions">
@@ -1037,11 +1003,7 @@
       container.querySelectorAll("button[data-action]").forEach(btn => {
         btn.addEventListener("click", () => {
           const group = generatedGroups[Number(btn.dataset.index)];
-          if (btn.dataset.action === "slack") {
-            copyText(buildSlackMessage(group), `${group.osm} Slack message copied`);
-          } else {
-            copyText(buildAsanaTasks(group), `${group.osm} Asana tasks copied`);
-          }
+          copyText(buildAsanaTasks(group), `${group.osm} Asana tasks copied`);
         });
       });
     }
