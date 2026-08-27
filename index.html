@@ -187,12 +187,12 @@
       flex-wrap: wrap;
     }
 
-    .osm-container {
+    .lead-container {
       display: grid;
       gap: 18px;
     }
 
-    .osm-card {
+    .lead-card {
       background: white;
       border: 1px solid var(--line);
       border-radius: 16px;
@@ -200,7 +200,7 @@
       overflow: hidden;
     }
 
-    .osm-header {
+    .lead-header {
       background: var(--soft);
       padding: 18px 20px;
       display: flex;
@@ -211,18 +211,18 @@
       border-bottom: 1px solid var(--line);
     }
 
-    .osm-header h2 {
+    .lead-header h2 {
       margin: 0;
       font-size: 21px;
     }
 
-    .osm-meta {
+    .lead-meta {
       color: var(--muted);
       font-size: 14px;
       margin-top: 4px;
     }
 
-    .osm-body {
+    .lead-body {
       padding: 18px 20px 22px;
     }
 
@@ -331,11 +331,11 @@
       background: white;
     }
 
-    .osm-header {
+    .lead-header {
       cursor: pointer;
     }
 
-    .osm-title-row {
+    .lead-title-row {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -347,11 +347,11 @@
       color: var(--brand);
     }
 
-    .osm-card.collapsed .chevron {
+    .lead-card.collapsed .chevron {
       transform: rotate(-90deg);
     }
 
-    .osm-card.collapsed .osm-body {
+    .lead-card.collapsed .lead-body {
       display: none;
     }
 
@@ -514,7 +514,7 @@
       .hero,
       .panel.setup,
       #summary,
-      #osmContainer,
+      #leadContainer,
       #reviewModal,
       .toast {
         display: none !important;
@@ -607,7 +607,7 @@
   <div class="page">
     <section class="hero">
       <h1>VRBO Renewal Manager</h1>
-      <p>Upload the Notion CSV, select a renewal month, then generate Slack approval messages and Asana task lists by OSM.</p>
+      <p>Upload the Notion CSV, select a renewal month, then generate Slack approval messages and Asana task lists by lead.</p>
     </section>
 
     <section class="panel setup">
@@ -626,7 +626,7 @@
         <button id="generateBtn" class="primary">Generate Renewal Lists</button>
         <button id="clearBtn" class="secondary">Clear</button>
       </div>
-      <div id="status" class="status">Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or an OSM of N/A will be excluded.</div>
+      <div id="status" class="status">Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or an lead of N/A will be excluded.</div>
     </section>
 
     <section id="summary" class="panel summary">
@@ -644,8 +644,8 @@
           <div id="summaryCost" class="value">$0.00</div>
         </div>
         <div class="stat">
-          <div class="label">OSMs</div>
-          <div id="summaryOsms" class="value">0</div>
+          <div class="label">leads</div>
+          <div id="summaryleads" class="value">0</div>
         </div>
       </div>
 
@@ -653,7 +653,7 @@
         <div>
           <div id="resultNote" class="status"></div>
           <div class="search-wrap" style="margin-top:10px;">
-            <input id="unitSearch" type="search" placeholder="🔍 Search units or OSMs" />
+            <input id="unitSearch" type="search" placeholder="🔍 Search units or leads" />
           </div>
         </div>
         <div class="button-row" style="margin-top:0;">
@@ -665,7 +665,7 @@
 
     </section>
 
-    <main id="osmContainer" class="osm-container"></main>
+    <main id="leadContainer" class="lead-container"></main>
 
     <section id="printSummary" class="print-summary"></section>
   </div>
@@ -702,7 +702,7 @@
     let selectedMonthLabel = "";
     let detectedColumns = {
       unit: "",
-      osm: "",
+      lead: "",
       date: "",
       cost: "",
       listingId: "",
@@ -779,7 +779,7 @@
     function detectColumns() {
       detectedColumns = {
         unit: guessHeader(["unit / listing", "unit", "listing", "property"]),
-        osm: guessHeader(["osm", "owner success manager", "manager"]),
+        lead: guessHeader(["lead", "owner success manager", "manager"]),
         date: guessHeader(["expires", "expiration date", "renewal date", "expiration"]),
         cost: guessHeader([
           "annual listing fee",
@@ -823,7 +823,7 @@
 
       const required = [
         ["Unit / Listing", detectedColumns.unit],
-        ["OSM", detectedColumns.osm],
+        ["lead", detectedColumns.lead],
         ["Expiration Date", detectedColumns.date],
         ["Annual Listing Fee", detectedColumns.cost]
       ];
@@ -862,7 +862,7 @@
     }
 
 
-    function isExcludedOSM(value) {
+    function isExcludedlead(value) {
       const normalized = String(value || "")
         .trim()
         .toUpperCase()
@@ -928,7 +928,7 @@
     }
 
     function renderGroups(groups) {
-      const container = $("osmContainer");
+      const container = $("leadContainer");
       container.innerHTML = "";
 
       if (!groups.length) {
@@ -938,8 +938,8 @@
 
       groups.forEach((group, groupIndex) => {
         const card = document.createElement("section");
-        card.className = "osm-card";
-        card.dataset.search = `${group.osm} ${group.items.map(item => item.unit).join(" ")}`.toLowerCase();
+        card.className = "lead-card";
+        card.dataset.search = `${group.lead} ${group.items.map(item => item.unit).join(" ")}`.toLowerCase();
 
         const rows = group.items.map(item => `
           <tr>
@@ -953,17 +953,17 @@
         const asanaTasks = buildAsanaTasks(group);
 
         card.innerHTML = `
-          <div class="osm-header" data-toggle-card>
+          <div class="lead-header" data-toggle-card>
             <div>
-              <div class="osm-title-row">
+              <div class="lead-title-row">
                 <span class="chevron">▼</span>
-                <h2>${escapeHTML(group.osm)}</h2>
+                <h2>${escapeHTML(group.lead)}</h2>
               </div>
-              <div class="osm-meta">${group.items.length} unit${group.items.length === 1 ? "" : "s"} • ${currency.format(group.totalCost)}</div>
+              <div class="lead-meta">${group.items.length} unit${group.items.length === 1 ? "" : "s"} • ${currency.format(group.totalCost)}</div>
             </div>
           </div>
 
-          <div class="osm-body">
+          <div class="lead-body">
             <div class="table-wrap">
               <table>
                 <thead>
@@ -990,14 +990,14 @@
       container.querySelectorAll("[data-toggle-card]").forEach(header => {
         header.addEventListener("click", (event) => {
           if (event.target.closest("button")) return;
-          header.closest(".osm-card").classList.toggle("collapsed");
+          header.closest(".lead-card").classList.toggle("collapsed");
         });
       });
 
       container.querySelectorAll("button[data-action]").forEach(btn => {
         btn.addEventListener("click", () => {
           const group = generatedGroups[Number(btn.dataset.index)];
-          copyText(buildAsanaTasks(group), `${group.osm} Asana tasks copied`);
+          copyText(buildAsanaTasks(group), `${group.lead} Asana tasks copied`);
         });
       });
     }
@@ -1006,7 +1006,7 @@
 
     function buildReviewRows() {
       const unitCol = detectedColumns.unit;
-      const osmCol = detectedColumns.osm;
+      const leadCol = detectedColumns.lead;
       const dateCol = detectedColumns.date;
       const costCol = detectedColumns.cost;
       const listingCol = detectedColumns.listingId;
@@ -1017,16 +1017,16 @@
       rawRows.forEach((row, index) => {
         const status = statusCol ? (row[statusCol] || "").trim() : "";
         const normalizedStatus = status.toLowerCase();
-        const osm = (row[osmCol] || "").trim();
+        const lead = (row[leadCol] || "").trim();
 
-        if (isExcludedOSM(osm)) return;
+        if (isExcludedlead(lead)) return;
         if (!status || normalizedStatus === "active") return;
 
         const expires = parseDate((row[dateCol] || "").trim());
 
         generatedNonActiveRows.push({
           unit: (row[unitCol] || "").trim() || `Unnamed Unit (Row ${index + 2})`,
-          osm: osm || "Unassigned OSM",
+          lead: lead || "Unassigned lead",
           status,
           expires,
           renewalMonth: expires ? monthLabel(monthKey(expires)) : "—",
@@ -1036,8 +1036,8 @@
       });
 
       generatedNonActiveRows.sort((a, b) => {
-        const osmCompare = a.osm.localeCompare(b.osm);
-        return osmCompare || a.unit.localeCompare(b.unit, undefined, {
+        const leadCompare = a.lead.localeCompare(b.lead);
+        return leadCompare || a.unit.localeCompare(b.unit, undefined, {
           numeric: true,
           sensitivity: "base"
         });
@@ -1058,7 +1058,7 @@
 
       generatedNonActiveRows.forEach(item => {
         lines.push(
-          `• ${item.unit} — Status: ${item.status} | OSM: ${item.osm} | Renewal Month: ${item.renewalMonth} | Annual Listing Fee: ${currency.format(item.cost)}`
+          `• ${item.unit} — Status: ${item.status} | lead: ${item.lead} | Renewal Month: ${item.renewalMonth} | Annual Listing Fee: ${currency.format(item.cost)}`
         );
       });
 
@@ -1098,7 +1098,7 @@
                   <th>Unit / Listing</th>
                   <th>VRBO Listing ID</th>
                   <th>Status</th>
-                  <th>OSM</th>
+                  <th>lead</th>
                   <th>Renewal Month</th>
                   <th>Annual Listing Fee</th>
                 </tr>
@@ -1109,7 +1109,7 @@
                     <td>${escapeHTML(item.unit)}</td>
                     <td>${escapeHTML(item.listingId || "")}</td>
                     <td>${escapeHTML(item.status)}</td>
-                    <td>${escapeHTML(item.osm)}</td>
+                    <td>${escapeHTML(item.lead)}</td>
                     <td>${escapeHTML(item.renewalMonth)}</td>
                     <td>${escapeHTML(currency.format(item.cost))}</td>
                   </tr>
@@ -1145,7 +1145,7 @@
         item.unit,
         item.listingId || "",
         item.status,
-        item.osm,
+        item.lead,
         item.renewalMonth,
         currency.format(item.cost)
       ])).join("");
@@ -1171,7 +1171,7 @@
   <Table>
    <Column ss:Width="180"/><Column ss:Width="130"/><Column ss:Width="110"/>
    <Column ss:Width="140"/><Column ss:Width="120"/><Column ss:Width="130"/>
-   ${headerRow(["Unit / Listing", "VRBO Listing ID", "Status", "OSM", "Renewal Month", "Annual Listing Fee"])}
+   ${headerRow(["Unit / Listing", "VRBO Listing ID", "Status", "lead", "Renewal Month", "Annual Listing Fee"])}
    ${nonActiveRows}
   </Table>
  </Worksheet>
@@ -1208,10 +1208,10 @@
       const allItems = groups.flatMap(group => group.items);
 
       const sortedItems = [...allItems].sort((a, b) => {
-        const osmCompare = a.osm.localeCompare(b.osm, undefined, {
+        const leadCompare = a.lead.localeCompare(b.lead, undefined, {
           sensitivity: "base"
         });
-        if (osmCompare !== 0) return osmCompare;
+        if (leadCompare !== 0) return leadCompare;
 
         const aTime = a.expires ? a.expires.getTime() : Number.MAX_SAFE_INTEGER;
         const bTime = b.expires ? b.expires.getTime() : Number.MAX_SAFE_INTEGER;
@@ -1231,7 +1231,7 @@
           <td>${item.expires ? escapeHTML(prettyDate(item.expires)) : "—"}</td>
           <td>${escapeHTML(currency.format(item.cost))}</td>
           <td>${escapeHTML(item.listingId || "")}</td>
-          <td>${escapeHTML(item.osm)}</td>
+          <td>${escapeHTML(item.lead)}</td>
         </tr>
       `).join("");
 
@@ -1265,7 +1265,7 @@
                 <th>Expiration Date</th>
                 <th>Annual Listing Fee</th>
                 <th>VRBO Listing ID</th>
-                <th>OSM</th>
+                <th>lead</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
@@ -1288,7 +1288,7 @@
       }
 
       const unitCol = detectedColumns.unit;
-      const osmCol = detectedColumns.osm;
+      const leadCol = detectedColumns.lead;
       const dateCol = detectedColumns.date;
       const costCol = detectedColumns.cost;
       const listingCol = detectedColumns.listingId;
@@ -1299,11 +1299,11 @@
 
       rawRows.forEach((row, index) => {
         const unit = (row[unitCol] || "").trim();
-        const osm = (row[osmCol] || "").trim();
+        const lead = (row[leadCol] || "").trim();
         const rawDate = (row[dateCol] || "").trim();
         const date = parseDate(rawDate);
 
-        if (isExcludedOSM(osm)) return;
+        if (isExcludedlead(lead)) return;
 
         if (!rawDate) {
           blankExpirationCount++;
@@ -1322,12 +1322,12 @@
         if (status !== "active") return;
 
         if (!unit) issues.push(`Row ${index + 2}: missing Unit / Listing.`);
-        if (!osm) issues.push(`Row ${index + 2}: ${unit || "Unnamed unit"} is missing an OSM.`);
+        if (!lead) issues.push(`Row ${index + 2}: ${unit || "Unnamed unit"} is missing an lead.`);
 
-        const groupName = osm || "Unassigned OSM";
+        const groupName = lead || "Unassigned lead";
         const item = {
           unit: unit || `Unnamed Unit (Row ${index + 2})`,
-          osm: groupName,
+          lead: groupName,
           expires: date,
           cost: parseMoney(row[costCol]),
           listingId: listingCol ? (row[listingCol] || "").trim() : ""
@@ -1337,14 +1337,14 @@
         grouped.get(groupName).push(item);
       });
 
-      generatedGroups = Array.from(grouped.entries()).map(([osm, items]) => {
+      generatedGroups = Array.from(grouped.entries()).map(([lead, items]) => {
         items.sort((a, b) => a.expires - b.expires || a.unit.localeCompare(b.unit));
         return {
-          osm,
+          lead,
           items,
           totalCost: items.reduce((sum, item) => sum + item.cost, 0)
         };
-      }).sort((a, b) => a.osm.localeCompare(b.osm));
+      }).sort((a, b) => a.lead.localeCompare(b.lead));
 
       selectedMonthLabel = monthLabel(selectedMonth);
 
@@ -1354,8 +1354,8 @@
       $("summaryMonth").textContent = selectedMonthLabel;
       $("summaryUnits").textContent = totalUnits.toLocaleString("en-US");
       $("summaryCost").textContent = currency.format(totalCost);
-      $("summaryOsms").textContent = generatedGroups.length.toLocaleString("en-US");
-      $("resultNote").textContent = `${totalUnits} renewal${totalUnits === 1 ? "" : "s"} found across ${generatedGroups.length} OSM${generatedGroups.length === 1 ? "" : "s"}.`;
+      $("summaryleads").textContent = generatedGroups.length.toLocaleString("en-US");
+      $("resultNote").textContent = `${totalUnits} renewal${totalUnits === 1 ? "" : "s"} found across ${generatedGroups.length} lead${generatedGroups.length === 1 ? "" : "s"}.`;
       $("summary").style.display = "block";
 
       renderGroups(generatedGroups);
@@ -1394,7 +1394,7 @@
       } catch (error) {
         rawRows = [];
         headers = [];
-        detectedColumns = { unit: "", osm: "", date: "", cost: "", listingId: "", status: "", issue: "" };
+        detectedColumns = { unit: "", lead: "", date: "", cost: "", listingId: "", status: "", issue: "" };
         $("status").textContent = `Unable to read the CSV: ${error.message}`;
         $("status").className = "status error";
       }
@@ -1408,10 +1408,10 @@
       generatedGroups = [];
       generatedReviewRows = [];
       generatedNonActiveRows = [];
-      detectedColumns = { unit: "", osm: "", date: "", cost: "", listingId: "", status: "", issue: "" };
+      detectedColumns = { unit: "", lead: "", date: "", cost: "", listingId: "", status: "", issue: "" };
       $("csvFile").value = "";
       $("summary").style.display = "none";
-      $("osmContainer").innerHTML = "";
+      $("leadContainer").innerHTML = "";
       $("printSummary").innerHTML = "";
       $("openReviewBtn").style.display = "none";
       $("openReviewBtn").textContent = "⚠️ Review Required (0)";
@@ -1419,7 +1419,7 @@
       $("reviewNote").textContent = "";
       closeReviewModal();
       $("unitSearch").value = "";
-      $("status").textContent = "Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or an OSM of N/A will be excluded.";
+      $("status").textContent = "Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or an lead of N/A will be excluded.";
       $("status").className = "status";
     });
 
@@ -1450,7 +1450,7 @@
 
     $("unitSearch").addEventListener("input", (event) => {
       const query = event.target.value.trim().toLowerCase();
-      document.querySelectorAll(".osm-card").forEach(card => {
+      document.querySelectorAll(".lead-card").forEach(card => {
         card.classList.toggle("no-match", query && !card.dataset.search.includes(query));
       });
     });
