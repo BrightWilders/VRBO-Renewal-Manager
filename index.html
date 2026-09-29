@@ -461,7 +461,7 @@
 
     <section class="hero">
       <h1>VRBO Renewal Manager</h1>
-      <p>Upload the Notion CSV, select a renewal month, then generate renewal and Asana task lists by lead.</p>
+      <p>Upload the Notion CSV, select a renewal month, then generate renewal and Asana task lists by Asset Manager.</p>
     </section>
 
     <section class="panel setup">
@@ -485,7 +485,7 @@
       </div>
 
       <div id="status" class="status">
-        Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or a lead of N/A will be excluded.
+        Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or an Asset Manager of N/A will be excluded.
       </div>
     </section>
 
@@ -509,7 +509,7 @@
         </div>
 
         <div class="stat">
-          <div class="label">Leads</div>
+          <div class="label">Asset Managers</div>
           <div id="summaryleads" class="value">0</div>
         </div>
 
@@ -521,7 +521,7 @@
           <div id="resultNote" class="status"></div>
 
           <div class="search-wrap" style="margin-top:10px;">
-            <input id="unitSearch" type="search" placeholder="🔍 Search units or leads" />
+            <input id="unitSearch" type="search" placeholder="🔍 Search units or Asset Managers" />
           </div>
         </div>
 
@@ -706,10 +706,8 @@
         ]),
 
         lead: guessHeader([
-          "lead",
-          "owner success manager",
-          "manager"
-        ]),
+  "asset manager"
+]),
 
         date: guessHeader([
           "expires",
@@ -762,7 +760,7 @@
 
       const required = [
         ["Unit / Listing", detectedColumns.unit],
-        ["lead", detectedColumns.lead],
+       ["Asset Manager", detectedColumns.lead],
         ["Expiration Date", detectedColumns.date],
         ["Annual Listing Fee", detectedColumns.cost]
       ];
@@ -1114,7 +1112,7 @@
             `Unnamed Unit (Row ${index + 2})`,
 
           lead:
-            lead || "Unassigned lead",
+            lead || "Unassigned Asset Manager",
 
           status,
 
@@ -1175,7 +1173,7 @@
       generatedNonActiveRows.forEach(item => {
 
         lines.push(
-          `• ${item.unit} — Status: ${item.status} | lead: ${item.lead} | Renewal Month: ${item.renewalMonth} | Annual Listing Fee: ${currency.format(item.cost)}`
+          `• ${item.unit} — Status: ${item.status} | Asset Manager: ${item.lead} | Renewal Month: ${item.renewalMonth} | Annual Listing Fee: ${currency.format(item.cost)}`
         );
       });
 
@@ -1247,7 +1245,7 @@
                   <th>Unit / Listing</th>
                   <th>VRBO Listing ID</th>
                   <th>Status</th>
-                  <th>lead</th>
+                  <th>Asset Manager</th>
                   <th>Renewal Month</th>
                   <th>Annual Listing Fee</th>
                 </tr>
@@ -1651,7 +1649,7 @@
                 <th>Expiration Date</th>
                 <th>Annual Listing Fee</th>
                 <th>VRBO Listing ID</th>
-                <th>lead</th>
+                <th>Asset Manager</th>
               </tr>
 
             </thead>
@@ -1792,13 +1790,13 @@
         if (!lead) {
 
           issues.push(
-            `Row ${index + 2}: ${unit || "Unnamed unit"} is missing a lead.`
+            `Row ${index + 2}: ${unit || "Unnamed unit"} is missing an Asset Manager.`
           );
         }
 
 
         const groupName =
-          lead || "Unassigned lead";
+          lead || "Unassigned Asset Manager";
 
 
         const item = {
@@ -1911,7 +1909,7 @@
 
 
       $("resultNote").textContent =
-        `${totalUnits} renewal${totalUnits === 1 ? "" : "s"} found across ${generatedGroups.length} lead${generatedGroups.length === 1 ? "" : "s"}.`;
+        `${totalUnits} renewal${totalUnits === 1 ? "" : "s"} found across ${generatedGroups.length} Asset Manager${generatedGroups.length === 1 ? "" : "s"}.`
 
 
       $("summary").style.display =
