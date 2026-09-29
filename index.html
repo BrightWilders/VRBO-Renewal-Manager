@@ -70,13 +70,8 @@
       gap: 16px;
     }
 
-    .field {
-      grid-column: span 4;
-    }
-
-    .field.wide {
-      grid-column: span 8;
-    }
+    .field { grid-column: span 4; }
+    .field.wide { grid-column: span 8; }
 
     label {
       display: block;
@@ -148,10 +143,7 @@
 
     .status.error { color: var(--danger); }
 
-
-    .summary {
-      display: none;
-    }
+    .summary { display: none; }
 
     .summary-cards {
       display: grid;
@@ -209,6 +201,7 @@
       gap: 14px;
       flex-wrap: wrap;
       border-bottom: 1px solid var(--line);
+      cursor: pointer;
     }
 
     .lead-header h2 {
@@ -252,28 +245,7 @@
       letter-spacing: 0.03em;
     }
 
-    td.amount, th.amount {
-      text-align: right;
-    }
-
-    details {
-      border: 1px solid var(--warning-line);
-      background: var(--warning);
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-top: 18px;
-    }
-
-    summary {
-      cursor: pointer;
-      font-weight: 800;
-    }
-
-    .issues-list {
-      margin: 12px 0 0;
-      padding-left: 20px;
-      line-height: 1.7;
-    }
+    td.amount, th.amount { text-align: right; }
 
     .empty {
       text-align: center;
@@ -304,18 +276,6 @@
       transform: translateY(0);
     }
 
-    @media (max-width: 850px) {
-      .field, .field.wide { grid-column: span 12; }
-      .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
-    @media (max-width: 520px) {
-      .summary-cards { grid-template-columns: 1fr; }
-      .hero h1 { font-size: 25px; }
-      .page { padding: 18px 12px 40px; }
-    }
-
-
     .search-wrap {
       min-width: 260px;
       flex: 1 1 280px;
@@ -329,10 +289,6 @@
       padding: 11px 12px;
       font: inherit;
       background: white;
-    }
-
-    .lead-header {
-      cursor: pointer;
     }
 
     .lead-title-row {
@@ -355,68 +311,9 @@
       display: none;
     }
 
-    .preview-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
-      margin-top: 18px;
-    }
+    .no-match { display: none !important; }
 
-    .preview-card {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: #fbfcfe;
-      overflow: hidden;
-    }
-
-    .preview-card-header {
-      padding: 12px 14px;
-      font-weight: 800;
-      border-bottom: 1px solid var(--line);
-      background: white;
-    }
-
-    .slack-preview {
-      padding: 16px;
-      background: white;
-      white-space: pre-wrap;
-      line-height: 1.5;
-      font-size: 14px;
-    }
-
-    .slack-preview strong {
-      font-weight: 800;
-    }
-
-    .asana-preview {
-      padding: 14px 16px;
-      white-space: pre-wrap;
-      line-height: 1.65;
-      font-size: 14px;
-      max-height: 340px;
-      overflow: auto;
-    }
-
-    .preview-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      padding: 0 16px 16px;
-      background: white;
-    }
-
-    .no-match {
-      display: none !important;
-    }
-
-    @media (max-width: 850px) {
-      .preview-grid { grid-template-columns: 1fr; }
-    }
-
-
-    .review-launch {
-      display: none;
-    }
+    .review-launch { display: none; }
 
     .review-modal {
       display: none;
@@ -428,9 +325,7 @@
       overflow: auto;
     }
 
-    .review-modal.open {
-      display: block;
-    }
+    .review-modal.open { display: block; }
 
     .review-window {
       max-width: 1180px;
@@ -495,14 +390,19 @@
       padding: 2px 6px;
     }
 
-    body.modal-open {
-      overflow: hidden;
+    body.modal-open { overflow: hidden; }
+
+    .print-summary { display: none; }
+
+    @media (max-width: 850px) {
+      .field, .field.wide { grid-column: span 12; }
+      .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
-
-
-    .print-summary {
-      display: none;
+    @media (max-width: 520px) {
+      .summary-cards { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 25px; }
+      .page { padding: 18px 12px 40px; }
     }
 
     @media print {
@@ -530,49 +430,6 @@
         padding: 18px;
       }
 
-      .print-summary h1 {
-        margin: 0 0 4px;
-        font-size: 24px;
-      }
-
-      .print-subtitle {
-        margin-bottom: 18px;
-        color: #475569;
-        font-size: 13px;
-      }
-
-      .print-kpis {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-bottom: 18px;
-      }
-
-      .print-kpi {
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        padding: 10px 12px;
-      }
-
-      .print-kpi .label {
-        color: #64748b;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: .05em;
-        text-transform: uppercase;
-      }
-
-      .print-kpi .value {
-        margin-top: 4px;
-        font-size: 18px;
-        font-weight: 800;
-      }
-
-      .print-section-title {
-        margin: 18px 0 8px;
-        font-size: 15px;
-      }
-
       .print-summary table {
         width: 100%;
         border-collapse: collapse;
@@ -592,75 +449,88 @@
         font-weight: 800;
       }
 
-      .print-summary .amount {
-        text-align: right;
-        white-space: nowrap;
-      }
-
       .print-summary tr {
         break-inside: avoid;
       }
     }
   </style>
 </head>
+
 <body>
   <div class="page">
+
     <section class="hero">
       <h1>VRBO Renewal Manager</h1>
-      <p>Upload the Notion CSV, select a renewal month, then generate Slack approval messages and Asana task lists by lead.</p>
+      <p>Upload the Notion CSV, select a renewal month, then generate renewal and Asana task lists by lead.</p>
     </section>
 
     <section class="panel setup">
       <div class="grid">
+
         <div class="field wide">
           <label for="csvFile">Notion CSV Export</label>
           <input id="csvFile" type="file" accept=".csv,text/csv" />
         </div>
+
         <div class="field">
           <label for="renewalMonth">Renewal Month</label>
           <input id="renewalMonth" type="month" />
         </div>
+
       </div>
 
       <div class="button-row">
         <button id="generateBtn" class="primary">Generate Renewal Lists</button>
         <button id="clearBtn" class="secondary">Clear</button>
       </div>
-      <div id="status" class="status">Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or an lead of N/A will be excluded.</div>
+
+      <div id="status" class="status">
+        Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or a lead of N/A will be excluded.
+      </div>
     </section>
 
     <section id="summary" class="panel summary">
+
       <div class="summary-cards">
+
         <div class="stat">
           <div class="label">Renewal Month</div>
           <div id="summaryMonth" class="value">—</div>
         </div>
+
         <div class="stat">
           <div class="label">Units Due</div>
           <div id="summaryUnits" class="value">0</div>
         </div>
+
         <div class="stat">
           <div class="label">Annual Listing Fee</div>
           <div id="summaryCost" class="value">$0.00</div>
         </div>
+
         <div class="stat">
-          <div class="label">leads</div>
+          <div class="label">Leads</div>
           <div id="summaryleads" class="value">0</div>
         </div>
+
       </div>
 
       <div class="toolbar">
+
         <div>
           <div id="resultNote" class="status"></div>
+
           <div class="search-wrap" style="margin-top:10px;">
             <input id="unitSearch" type="search" placeholder="🔍 Search units or leads" />
           </div>
         </div>
+
         <div class="button-row" style="margin-top:0;">
           <button id="openReviewBtn" class="outline review-launch">⚠️ Review Required (0)</button>
           <button id="copyAllAsanaBtn" class="primary">📋 Copy Entire Monthly Unit List</button>
           <button onclick="window.print()" class="secondary">🖨 Print Summary</button>
         </div>
+
       </div>
 
     </section>
@@ -668,38 +538,54 @@
     <main id="leadContainer" class="lead-container"></main>
 
     <section id="printSummary" class="print-summary"></section>
+
   </div>
 
-
   <div id="reviewModal" class="review-modal" aria-hidden="true">
+
     <div class="review-window" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+
       <div class="review-window-header">
+
         <div>
           <h2 id="reviewTitle">VRBO Exception Report</h2>
-          <p>The listings below are not Active and were excluded from the renewal process. This window is not included in the printed summary.</p>
+          <p>
+            The listings below are not Active and were excluded from the renewal process.
+            Multi-Listings are excluded from this report.
+          </p>
         </div>
+
         <button id="closeReviewBtn" class="close-review" aria-label="Close review window">×</button>
+
       </div>
+
       <div class="review-window-body">
+
         <div class="review-window-actions">
           <button id="copyReviewBtn" class="outline">📋 Copy Review List</button>
           <button id="downloadReviewBtn" class="primary">⬇️ Download Excel File</button>
         </div>
+
         <div id="reviewNote" class="status"></div>
         <div id="reviewContent"></div>
+
       </div>
+
     </div>
+
   </div>
 
   <div id="toast" class="toast">Copied</div>
 
   <script>
+
     let rawRows = [];
     let headers = [];
     let generatedGroups = [];
     let generatedReviewRows = [];
     let generatedNonActiveRows = [];
     let selectedMonthLabel = "";
+
     let detectedColumns = {
       unit: "",
       lead: "",
@@ -717,70 +603,121 @@
       currency: "USD"
     });
 
+
     function parseCSV(text) {
+
       const rows = [];
       let row = [];
       let cell = "";
       let inQuotes = false;
 
       for (let i = 0; i < text.length; i++) {
+
         const char = text[i];
         const next = text[i + 1];
 
         if (char === '"') {
+
           if (inQuotes && next === '"') {
             cell += '"';
             i++;
           } else {
             inQuotes = !inQuotes;
           }
+
         } else if (char === "," && !inQuotes) {
+
           row.push(cell);
           cell = "";
+
         } else if ((char === "\n" || char === "\r") && !inQuotes) {
+
           if (char === "\r" && next === "\n") i++;
+
           row.push(cell);
+
           if (row.some(v => v.trim() !== "")) rows.push(row);
+
           row = [];
           cell = "";
+
         } else {
           cell += char;
         }
       }
 
       row.push(cell);
+
       if (row.some(v => v.trim() !== "")) rows.push(row);
 
       if (!rows.length) return { headers: [], data: [] };
 
       const headerRow = rows[0].map(h => h.trim());
+
       const data = rows.slice(1).map(values => {
+
         const obj = {};
-        headerRow.forEach((h, idx) => obj[h] = (values[idx] ?? "").trim());
+
+        headerRow.forEach((h, idx) => {
+          obj[h] = (values[idx] ?? "").trim();
+        });
+
         return obj;
       });
 
-      return { headers: headerRow, data };
+      return {
+        headers: headerRow,
+        data
+      };
     }
 
+
     function guessHeader(candidates) {
+
       const normalized = headers.map(h => h.toLowerCase().trim());
+
       for (const candidate of candidates) {
+
         const exact = normalized.findIndex(h => h === candidate);
+
         if (exact >= 0) return headers[exact];
       }
+
       for (const candidate of candidates) {
+
         const partial = normalized.findIndex(h => h.includes(candidate));
+
         if (partial >= 0) return headers[partial];
       }
+
       return "";
     }
 
+
     function detectColumns() {
+
       detectedColumns = {
-        unit: guessHeader(["unit / listing", "unit", "listing", "property"]),
-        lead: guessHeader(["lead", "owner success manager", "manager"]),
-        date: guessHeader(["expires", "expiration date", "renewal date", "expiration"]),
+
+        unit: guessHeader([
+          "unit / listing",
+          "unit",
+          "listing",
+          "property"
+        ]),
+
+        lead: guessHeader([
+          "lead",
+          "owner success manager",
+          "manager"
+        ]),
+
+        date: guessHeader([
+          "expires",
+          "expiration date",
+          "renewal date",
+          "expiration"
+        ]),
+
         cost: guessHeader([
           "annual listing fee",
           "annual subscription amount",
@@ -790,10 +727,12 @@
           "cost",
           "amount"
         ]),
+
         listingId: ""
       };
 
       const normalizedHeaders = headers.map(h => h.toLowerCase().trim());
+
       const listingIndex = normalizedHeaders.findIndex(h =>
         h === "vrbo listing id" ||
         h === "listing id" ||
@@ -835,34 +774,58 @@
       return missing;
     }
 
+
     function parseDate(value) {
+
       if (!value) return null;
+
       const cleaned = String(value).trim();
+
       if (!cleaned) return null;
 
       const direct = new Date(cleaned);
+
       if (!isNaN(direct.getTime())) return direct;
 
       const parts = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+
       if (parts) {
+
         let year = Number(parts[3]);
+
         if (year < 100) year += 2000;
-        const d = new Date(year, Number(parts[1]) - 1, Number(parts[2]));
+
+        const d = new Date(
+          year,
+          Number(parts[1]) - 1,
+          Number(parts[2])
+        );
+
         return isNaN(d.getTime()) ? null : d;
       }
+
       return null;
     }
 
+
     function parseMoney(value) {
+
       if (value == null || value === "") return 0;
-      const cleaned = String(value).replace(/[$,\s]/g, "").replace(/[()]/g, "");
+
+      const cleaned = String(value)
+        .replace(/[$,\s]/g, "")
+        .replace(/[()]/g, "");
+
       const num = Number(cleaned);
+
       if (isNaN(num)) return 0;
+
       return String(value).includes("(") ? -num : num;
     }
 
 
     function isExcludedlead(value) {
+
       const normalized = String(value || "")
         .trim()
         .toUpperCase()
@@ -871,11 +834,15 @@
       return normalized === "N/A" || normalized === "NA";
     }
 
+
     function monthKey(date) {
+
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     }
 
+
     function prettyDate(date) {
+
       return new Intl.DateTimeFormat("en-US", {
         month: "short",
         day: "numeric",
@@ -883,15 +850,20 @@
       }).format(date);
     }
 
+
     function monthLabel(key) {
+
       const [year, month] = key.split("-").map(Number);
+
       return new Intl.DateTimeFormat("en-US", {
         month: "long",
         year: "numeric"
       }).format(new Date(year, month - 1, 1));
     }
 
+
     function escapeHTML(value) {
+
       return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
@@ -900,25 +872,44 @@
         .replaceAll("'", "&#039;");
     }
 
+
     function showToast(message) {
+
       const toast = $("toast");
+
       toast.textContent = message;
       toast.classList.add("show");
+
       clearTimeout(showToast.timer);
-      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1600);
+
+      showToast.timer = setTimeout(
+        () => toast.classList.remove("show"),
+        1600
+      );
     }
 
+
     async function copyText(text, message) {
+
       try {
+
         await navigator.clipboard.writeText(text);
+
       } catch {
+
         const textarea = document.createElement("textarea");
+
         textarea.value = text;
+
         document.body.appendChild(textarea);
+
         textarea.select();
+
         document.execCommand("copy");
+
         textarea.remove();
       }
+
       showToast(message || "Copied");
     }
 
@@ -927,19 +918,32 @@
       return group.items.map(item => item.unit).join("\n");
     }
 
+
     function renderGroups(groups) {
+
       const container = $("leadContainer");
+
       container.innerHTML = "";
 
       if (!groups.length) {
-        container.innerHTML = `<section class="panel empty">No renewals were found for ${escapeHTML(selectedMonthLabel)}.</section>`;
+
+        container.innerHTML =
+          `<section class="panel empty">
+            No renewals were found for ${escapeHTML(selectedMonthLabel)}.
+          </section>`;
+
         return;
       }
 
       groups.forEach((group, groupIndex) => {
+
         const card = document.createElement("section");
+
         card.className = "lead-card";
-        card.dataset.search = `${group.lead} ${group.items.map(item => item.unit).join(" ")}`.toLowerCase();
+
+        card.dataset.search =
+          `${group.lead} ${group.items.map(item => item.unit).join(" ")}`
+          .toLowerCase();
 
         const rows = group.items.map(item => `
           <tr>
@@ -950,22 +954,34 @@
           </tr>
         `).join("");
 
-        const asanaTasks = buildAsanaTasks(group);
-
         card.innerHTML = `
+
           <div class="lead-header" data-toggle-card>
+
             <div>
+
               <div class="lead-title-row">
                 <span class="chevron">▼</span>
                 <h2>${escapeHTML(group.lead)}</h2>
               </div>
-              <div class="lead-meta">${group.items.length} unit${group.items.length === 1 ? "" : "s"} • ${currency.format(group.totalCost)}</div>
+
+              <div class="lead-meta">
+                ${group.items.length}
+                unit${group.items.length === 1 ? "" : "s"}
+                •
+                ${currency.format(group.totalCost)}
+              </div>
+
             </div>
+
           </div>
 
           <div class="lead-body">
+
             <div class="table-wrap">
+
               <table>
+
                 <thead>
                   <tr>
                     <th>Unit / Listing</th>
@@ -974,37 +990,76 @@
                     <th>VRBO Listing ID</th>
                   </tr>
                 </thead>
-                <tbody>${rows}</tbody>
+
+                <tbody>
+                  ${rows}
+                </tbody>
+
               </table>
+
             </div>
 
             <div class="button-row" style="margin-top:4px;">
-              <button class="outline" data-action="asana" data-index="${groupIndex}">✅ Copy Asana Unit Tasks</button>
+              <button
+                class="outline"
+                data-action="asana"
+                data-index="${groupIndex}"
+              >
+                ✅ Copy Asana Unit Tasks
+              </button>
             </div>
+
           </div>
         `;
 
         container.appendChild(card);
       });
 
+
       container.querySelectorAll("[data-toggle-card]").forEach(header => {
+
         header.addEventListener("click", (event) => {
+
           if (event.target.closest("button")) return;
-          header.closest(".lead-card").classList.toggle("collapsed");
+
+          header
+            .closest(".lead-card")
+            .classList.toggle("collapsed");
         });
       });
 
+
       container.querySelectorAll("button[data-action]").forEach(btn => {
+
         btn.addEventListener("click", () => {
-          const group = generatedGroups[Number(btn.dataset.index)];
-          copyText(buildAsanaTasks(group), `${group.lead} Asana tasks copied`);
+
+          const group =
+            generatedGroups[Number(btn.dataset.index)];
+
+          copyText(
+            buildAsanaTasks(group),
+            `${group.lead} Asana tasks copied`
+          );
         });
       });
     }
 
 
+    /*
+      EXCEPTION REPORT
+
+      Excluded entirely:
+      - OSM/lead = N/A
+      - Active listings
+      - Multi-Listing
+      - Multi-Listings
+
+      The Multi-Listing check ignores capitalization,
+      spaces, underscores, and hyphens.
+    */
 
     function buildReviewRows() {
+
       const unitCol = detectedColumns.unit;
       const leadCol = detectedColumns.lead;
       const dateCol = detectedColumns.date;
@@ -1015,39 +1070,100 @@
       generatedNonActiveRows = [];
 
       rawRows.forEach((row, index) => {
-        const status = statusCol ? (row[statusCol] || "").trim() : "";
-        const normalizedStatus = status.toLowerCase();
-        const lead = (row[leadCol] || "").trim();
 
+        const status =
+          statusCol ? (row[statusCol] || "").trim() : "";
+
+        const normalizedStatus =
+          status.toLowerCase();
+
+        const lead =
+          (row[leadCol] || "").trim();
+
+
+        // Ignore N/A OSM records completely
         if (isExcludedlead(lead)) return;
-        if (!status || normalizedStatus === "active") return;
 
-        const expires = parseDate((row[dateCol] || "").trim());
+
+        // Ignore Multi-Listings completely from the Exception Report
+        const normalizedStatusKey =
+          normalizedStatus.replace(/[\s_-]+/g, "");
+
+        if (
+          normalizedStatusKey === "multilisting" ||
+          normalizedStatusKey === "multilistings"
+        ) {
+          return;
+        }
+
+
+        // Only non-active listings belong in the Exception Report
+        if (!status || normalizedStatus === "active") {
+          return;
+        }
+
+
+        const expires =
+          parseDate((row[dateCol] || "").trim());
+
 
         generatedNonActiveRows.push({
-          unit: (row[unitCol] || "").trim() || `Unnamed Unit (Row ${index + 2})`,
-          lead: lead || "Unassigned lead",
+
+          unit:
+            (row[unitCol] || "").trim() ||
+            `Unnamed Unit (Row ${index + 2})`,
+
+          lead:
+            lead || "Unassigned lead",
+
           status,
+
           expires,
-          renewalMonth: expires ? monthLabel(monthKey(expires)) : "—",
-          cost: parseMoney(row[costCol]),
-          listingId: listingCol ? (row[listingCol] || "").trim() : ""
+
+          renewalMonth:
+            expires
+              ? monthLabel(monthKey(expires))
+              : "—",
+
+          cost:
+            parseMoney(row[costCol]),
+
+          listingId:
+            listingCol
+              ? (row[listingCol] || "").trim()
+              : ""
         });
+
       });
+
 
       generatedNonActiveRows.sort((a, b) => {
-        const leadCompare = a.lead.localeCompare(b.lead);
-        return leadCompare || a.unit.localeCompare(b.unit, undefined, {
-          numeric: true,
-          sensitivity: "base"
-        });
+
+        const leadCompare =
+          a.lead.localeCompare(b.lead);
+
+        return leadCompare ||
+          a.unit.localeCompare(
+            b.unit,
+            undefined,
+            {
+              numeric: true,
+              sensitivity: "base"
+            }
+          );
       });
 
-      generatedReviewRows = [...generatedNonActiveRows];
+
+      generatedReviewRows =
+        [...generatedNonActiveRows];
     }
 
+
     function buildReviewCopyText() {
-      if (!generatedNonActiveRows.length) return "No listings require review.";
+
+      if (!generatedNonActiveRows.length) {
+        return "No listings require review.";
+      }
 
       const lines = [
         "*VRBO Non-Active Listings*",
@@ -1057,6 +1173,7 @@
       ];
 
       generatedNonActiveRows.forEach(item => {
+
         lines.push(
           `• ${item.unit} — Status: ${item.status} | lead: ${item.lead} | Renewal Month: ${item.renewalMonth} | Annual Listing Fee: ${currency.format(item.cost)}`
         );
@@ -1065,34 +1182,66 @@
       return lines.join("\n");
     }
 
+
     function renderPersonalReview() {
+
       const content = $("reviewContent");
       const note = $("reviewNote");
       const launchButton = $("openReviewBtn");
-      const total = generatedNonActiveRows.length;
+
+      const total =
+        generatedNonActiveRows.length;
+
 
       if (total > 0) {
+
         launchButton.style.display = "inline-flex";
-        launchButton.textContent = `⚠️ Review Required (${total})`;
+
+        launchButton.textContent =
+          `⚠️ Review Required (${total})`;
+
       } else {
+
         launchButton.style.display = "none";
       }
 
-      $("copyReviewBtn").disabled = total === 0;
-      $("downloadReviewBtn").disabled = total === 0;
 
-      note.innerHTML = `<span class="review-count">${total}</span> non-active listing${total === 1 ? "" : "s"} excluded from the renewal process.`;
+      $("copyReviewBtn").disabled =
+        total === 0;
+
+      $("downloadReviewBtn").disabled =
+        total === 0;
+
+
+      note.innerHTML =
+        `<span class="review-count">${total}</span>
+         non-active listing${total === 1 ? "" : "s"}
+         excluded from the renewal process.`;
+
 
       if (!total) {
-        content.innerHTML = `<div class="review-empty">No non-active listings require review.</div>`;
+
+        content.innerHTML =
+          `<div class="review-empty">
+            No non-active listings require review.
+          </div>`;
+
         return;
       }
 
+
       content.innerHTML = `
+
         <section style="margin-top:18px;">
-          <h3 style="margin:0 0 6px;">🚫 Non-Active Listings (${total})</h3>
+
+          <h3 style="margin:0 0 6px;">
+            🚫 Non-Active Listings (${total})
+          </h3>
+
           <div class="table-wrap" style="margin-top:12px;">
+
             <table>
+
               <thead>
                 <tr>
                   <th>Unit / Listing</th>
@@ -1103,8 +1252,11 @@
                   <th>Annual Listing Fee</th>
                 </tr>
               </thead>
+
               <tbody>
+
                 ${generatedNonActiveRows.map(item => `
+
                   <tr>
                     <td>${escapeHTML(item.unit)}</td>
                     <td>${escapeHTML(item.listingId || "")}</td>
@@ -1113,153 +1265,387 @@
                     <td>${escapeHTML(item.renewalMonth)}</td>
                     <td>${escapeHTML(currency.format(item.cost))}</td>
                   </tr>
+
                 `).join("")}
+
               </tbody>
+
             </table>
+
           </div>
+
         </section>
       `;
     }
 
+
     function downloadReviewExcel() {
+
       if (!generatedNonActiveRows.length) return;
 
-      const xmlEscape = value => String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&apos;");
+
+      const xmlEscape = value =>
+        String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&apos;");
+
 
       const cell = (value, style = "") =>
-        `<Cell${style ? ` ss:StyleID="${style}"` : ""}><Data ss:Type="String">${xmlEscape(value)}</Data></Cell>`;
-      const row = values => `<Row>${values.map(value => cell(value)).join("")}</Row>`;
-      const headerRow = values => `<Row>${values.map(value => cell(value, "Header")).join("")}</Row>`;
+        `<Cell${style ? ` ss:StyleID="${style}"` : ""}>
+          <Data ss:Type="String">${xmlEscape(value)}</Data>
+        </Cell>`;
+
+
+      const row = values =>
+        `<Row>${values.map(value => cell(value)).join("")}</Row>`;
+
+
+      const headerRow = values =>
+        `<Row>${values.map(value => cell(value, "Header")).join("")}</Row>`;
+
 
       const summaryRows = [
-        row(["Generated", new Date().toLocaleDateString("en-US")]),
-        row(["Total Non-Active Listings", generatedNonActiveRows.length])
+
+        row([
+          "Generated",
+          new Date().toLocaleDateString("en-US")
+        ]),
+
+        row([
+          "Total Non-Active Listings",
+          generatedNonActiveRows.length
+        ])
+
       ].join("");
 
-      const nonActiveRows = generatedNonActiveRows.map(item => row([
-        item.unit,
-        item.listingId || "",
-        item.status,
-        item.lead,
-        item.renewalMonth,
-        currency.format(item.cost)
-      ])).join("");
+
+      const nonActiveRows =
+        generatedNonActiveRows.map(item => row([
+
+          item.unit,
+          item.listingId || "",
+          item.status,
+          item.lead,
+          item.renewalMonth,
+          currency.format(item.cost)
+
+        ])).join("");
+
 
       const workbook = `<?xml version="1.0"?>
+
 <?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+
+<Workbook
+ xmlns="urn:schemas-microsoft-com:office:spreadsheet"
  xmlns:o="urn:schemas-microsoft-com:office:office"
  xmlns:x="urn:schemas-microsoft-com:office:excel"
  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+
  <Styles>
-  <Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Bottom"/></Style>
-  <Style ss:ID="Header"><Font ss:Bold="1"/><Interior ss:Color="#E2E8F0" ss:Pattern="Solid"/></Style>
+
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Bottom"/>
+  </Style>
+
+  <Style ss:ID="Header">
+   <Font ss:Bold="1"/>
+   <Interior ss:Color="#E2E8F0" ss:Pattern="Solid"/>
+  </Style>
+
  </Styles>
+
  <Worksheet ss:Name="Summary">
+
   <Table>
-   <Column ss:Width="220"/><Column ss:Width="130"/>
-   ${headerRow(["Review Summary", "Count / Date"])}
+
+   <Column ss:Width="220"/>
+   <Column ss:Width="130"/>
+
+   ${headerRow([
+     "Review Summary",
+     "Count / Date"
+   ])}
+
    ${summaryRows}
+
   </Table>
+
  </Worksheet>
+
  <Worksheet ss:Name="Non-Active Listings">
+
   <Table>
-   <Column ss:Width="180"/><Column ss:Width="130"/><Column ss:Width="110"/>
-   <Column ss:Width="140"/><Column ss:Width="120"/><Column ss:Width="130"/>
-   ${headerRow(["Unit / Listing", "VRBO Listing ID", "Status", "lead", "Renewal Month", "Annual Listing Fee"])}
+
+   <Column ss:Width="180"/>
+   <Column ss:Width="130"/>
+   <Column ss:Width="110"/>
+   <Column ss:Width="140"/>
+   <Column ss:Width="120"/>
+   <Column ss:Width="130"/>
+
+   ${headerRow([
+     "Unit / Listing",
+     "VRBO Listing ID",
+     "Status",
+     "lead",
+     "Renewal Month",
+     "Annual Listing Fee"
+   ])}
+
    ${nonActiveRows}
+
   </Table>
+
  </Worksheet>
+
 </Workbook>`;
 
-      const blob = new Blob([workbook], { type: "application/vnd.ms-excel;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      const today = new Date().toISOString().slice(0, 10);
+
+      const blob = new Blob(
+        [workbook],
+        {
+          type: "application/vnd.ms-excel;charset=utf-8"
+        }
+      );
+
+
+      const url =
+        URL.createObjectURL(blob);
+
+
+      const link =
+        document.createElement("a");
+
+
+      const today =
+        new Date()
+          .toISOString()
+          .slice(0, 10);
+
+
       link.href = url;
-      link.download = `VRBO-Non-Active-Listings-${today}.xls`;
+
+      link.download =
+        `VRBO-Non-Active-Listings-${today}.xls`;
+
+
       document.body.appendChild(link);
+
       link.click();
+
       link.remove();
+
       URL.revokeObjectURL(url);
+
       showToast("Excel file downloaded");
     }
 
+
     function openReviewModal() {
-      $("reviewModal").classList.add("open");
-      $("reviewModal").setAttribute("aria-hidden", "false");
-      document.body.classList.add("modal-open");
+
+      $("reviewModal")
+        .classList.add("open");
+
+      $("reviewModal")
+        .setAttribute(
+          "aria-hidden",
+          "false"
+        );
+
+      document.body
+        .classList.add("modal-open");
     }
+
 
     function closeReviewModal() {
-      $("reviewModal").classList.remove("open");
-      $("reviewModal").setAttribute("aria-hidden", "true");
-      document.body.classList.remove("modal-open");
+
+      $("reviewModal")
+        .classList.remove("open");
+
+      $("reviewModal")
+        .setAttribute(
+          "aria-hidden",
+          "true"
+        );
+
+      document.body
+        .classList.remove("modal-open");
     }
 
+
     function renderPrintSummary(groups) {
-      const selectedMonth = $("renewalMonth").value;
-      const selectedLabel = monthLabel(selectedMonth);
-      const allItems = groups.flatMap(group => group.items);
 
-      const sortedItems = [...allItems].sort((a, b) => {
-        const leadCompare = a.lead.localeCompare(b.lead, undefined, {
-          sensitivity: "base"
+      const selectedMonth =
+        $("renewalMonth").value;
+
+      const selectedLabel =
+        monthLabel(selectedMonth);
+
+      const allItems =
+        groups.flatMap(
+          group => group.items
+        );
+
+
+      const sortedItems =
+        [...allItems].sort((a, b) => {
+
+          const leadCompare =
+            a.lead.localeCompare(
+              b.lead,
+              undefined,
+              {
+                sensitivity: "base"
+              }
+            );
+
+          if (leadCompare !== 0) {
+            return leadCompare;
+          }
+
+
+          const aTime =
+            a.expires
+              ? a.expires.getTime()
+              : Number.MAX_SAFE_INTEGER;
+
+
+          const bTime =
+            b.expires
+              ? b.expires.getTime()
+              : Number.MAX_SAFE_INTEGER;
+
+
+          if (aTime !== bTime) {
+            return aTime - bTime;
+          }
+
+
+          return a.unit.localeCompare(
+            b.unit,
+            undefined,
+            {
+              numeric: true,
+              sensitivity: "base"
+            }
+          );
         });
-        if (leadCompare !== 0) return leadCompare;
 
-        const aTime = a.expires ? a.expires.getTime() : Number.MAX_SAFE_INTEGER;
-        const bTime = b.expires ? b.expires.getTime() : Number.MAX_SAFE_INTEGER;
-        if (aTime !== bTime) return aTime - bTime;
 
-        return a.unit.localeCompare(b.unit, undefined, {
-          numeric: true,
-          sensitivity: "base"
-        });
-      });
+      const totalFees =
+        sortedItems.reduce(
+          (sum, item) =>
+            sum + item.cost,
+          0
+        );
 
-      const totalFees = sortedItems.reduce((sum, item) => sum + item.cost, 0);
 
-      const rows = sortedItems.map(item => `
-        <tr>
-          <td>${escapeHTML(item.unit)}</td>
-          <td>${item.expires ? escapeHTML(prettyDate(item.expires)) : "—"}</td>
-          <td>${escapeHTML(currency.format(item.cost))}</td>
-          <td>${escapeHTML(item.listingId || "")}</td>
-          <td>${escapeHTML(item.lead)}</td>
-        </tr>
-      `).join("");
+      const rows =
+        sortedItems.map(item => `
+
+          <tr>
+
+            <td>
+              ${escapeHTML(item.unit)}
+            </td>
+
+            <td>
+              ${
+                item.expires
+                  ? escapeHTML(
+                      prettyDate(item.expires)
+                    )
+                  : "—"
+              }
+            </td>
+
+            <td>
+              ${escapeHTML(
+                currency.format(item.cost)
+              )}
+            </td>
+
+            <td>
+              ${escapeHTML(
+                item.listingId || ""
+              )}
+            </td>
+
+            <td>
+              ${escapeHTML(item.lead)}
+            </td>
+
+          </tr>
+
+        `).join("");
+
 
       $("printSummary").innerHTML = `
+
         <div class="print-report">
-          
-<div class="print-title">
+
+          <div
+            class="print-title"
+            style="font-size:24px;font-weight:800;"
+          >
             VRBO Annual Subscription Renewals
           </div>
-          <div style="width:340px;border-bottom:2px solid #475569;margin:6px 0 22px 0;"></div>
 
-          <div class="print-metrics">
-            <div class="print-metric">
-              <span>Renewal Month</span>
-              <strong>${escapeHTML(selectedLabel)}</strong>
+          <div
+            style="
+              width:340px;
+              border-bottom:2px solid #475569;
+              margin:6px 0 22px 0;
+            "
+          ></div>
+
+
+          <div
+            class="print-metrics"
+            style="
+              display:grid;
+              grid-template-columns:repeat(3,1fr);
+              gap:10px;
+            "
+          >
+
+            <div>
+              <span>Renewal Month</span><br>
+              <strong>
+                ${escapeHTML(selectedLabel)}
+              </strong>
             </div>
-            <div class="print-metric">
-              <span>Units Due</span>
-              <strong>${sortedItems.length}</strong>
+
+            <div>
+              <span>Units Due</span><br>
+              <strong>
+                ${sortedItems.length}
+              </strong>
             </div>
-            <div class="print-metric">
-              <span>Annual Listing Fees</span>
-              <strong>${escapeHTML(currency.format(totalFees))}</strong>
+
+            <div>
+              <span>Annual Listing Fees</span><br>
+              <strong>
+                ${escapeHTML(
+                  currency.format(totalFees)
+                )}
+              </strong>
             </div>
+
           </div>
 
-          <table class="print-table" style="margin-top:22px;">
+
+          <table
+            class="print-table"
+            style="margin-top:22px;"
+          >
+
             <thead>
+
               <tr>
                 <th>Unit / Listing</th>
                 <th>Expiration Date</th>
@@ -1267,196 +1653,568 @@
                 <th>VRBO Listing ID</th>
                 <th>lead</th>
               </tr>
+
             </thead>
-            <tbody>${rows}</tbody>
+
+            <tbody>
+              ${rows}
+            </tbody>
+
           </table>
+
         </div>
       `;
     }
 
+
     function generate() {
-      const selectedMonth = $("renewalMonth").value;
+
+      const selectedMonth =
+        $("renewalMonth").value;
+
+
       if (!rawRows.length) {
-        $("status").textContent = "Upload a CSV before generating the renewal lists.";
-        $("status").className = "status error";
-        return;
-      }
-      if (!selectedMonth) {
-        $("status").textContent = "Select a renewal month.";
-        $("status").className = "status error";
+
+        $("status").textContent =
+          "Upload a CSV before generating the renewal lists.";
+
+        $("status").className =
+          "status error";
+
         return;
       }
 
-      const unitCol = detectedColumns.unit;
-      const leadCol = detectedColumns.lead;
-      const dateCol = detectedColumns.date;
-      const costCol = detectedColumns.cost;
-      const listingCol = detectedColumns.listingId;
+
+      if (!selectedMonth) {
+
+        $("status").textContent =
+          "Select a renewal month.";
+
+        $("status").className =
+          "status error";
+
+        return;
+      }
+
+
+      const unitCol =
+        detectedColumns.unit;
+
+      const leadCol =
+        detectedColumns.lead;
+
+      const dateCol =
+        detectedColumns.date;
+
+      const costCol =
+        detectedColumns.cost;
+
+      const listingCol =
+        detectedColumns.listingId;
+
 
       const issues = [];
-      const grouped = new Map();
+
+      const grouped =
+        new Map();
+
       let blankExpirationCount = 0;
 
-      rawRows.forEach((row, index) => {
-        const unit = (row[unitCol] || "").trim();
-        const lead = (row[leadCol] || "").trim();
-        const rawDate = (row[dateCol] || "").trim();
-        const date = parseDate(rawDate);
 
-        if (isExcludedlead(lead)) return;
+      rawRows.forEach((row, index) => {
+
+        const unit =
+          (row[unitCol] || "").trim();
+
+        const lead =
+          (row[leadCol] || "").trim();
+
+        const rawDate =
+          (row[dateCol] || "").trim();
+
+        const date =
+          parseDate(rawDate);
+
+
+        if (isExcludedlead(lead)) {
+          return;
+        }
+
 
         if (!rawDate) {
+
           blankExpirationCount++;
+
           return;
         }
+
 
         if (!date) {
-          issues.push(`Row ${index + 2}: invalid expiration date for ${unit || "unnamed unit"} (${rawDate}).`);
+
+          issues.push(
+            `Row ${index + 2}: invalid expiration date for ${unit || "unnamed unit"} (${rawDate}).`
+          );
+
           return;
         }
 
-        if (monthKey(date) !== selectedMonth) return;
 
-        const statusCol = detectedColumns.status;
-        const status = statusCol ? (row[statusCol] || "").trim().toLowerCase() : "active";
-        if (status !== "active") return;
-
-        if (!unit) issues.push(`Row ${index + 2}: missing Unit / Listing.`);
-        if (!lead) issues.push(`Row ${index + 2}: ${unit || "Unnamed unit"} is missing an lead.`);
-
-        const groupName = lead || "Unassigned lead";
-        const item = {
-          unit: unit || `Unnamed Unit (Row ${index + 2})`,
-          lead: groupName,
-          expires: date,
-          cost: parseMoney(row[costCol]),
-          listingId: listingCol ? (row[listingCol] || "").trim() : ""
-        };
-
-        if (!grouped.has(groupName)) grouped.set(groupName, []);
-        grouped.get(groupName).push(item);
-      });
-
-      generatedGroups = Array.from(grouped.entries()).map(([lead, items]) => {
-        items.sort((a, b) => a.expires - b.expires || a.unit.localeCompare(b.unit));
-        return {
-          lead,
-          items,
-          totalCost: items.reduce((sum, item) => sum + item.cost, 0)
-        };
-      }).sort((a, b) => a.lead.localeCompare(b.lead));
-
-      selectedMonthLabel = monthLabel(selectedMonth);
-
-      const totalUnits = generatedGroups.reduce((sum, group) => sum + group.items.length, 0);
-      const totalCost = generatedGroups.reduce((sum, group) => sum + group.totalCost, 0);
-
-      $("summaryMonth").textContent = selectedMonthLabel;
-      $("summaryUnits").textContent = totalUnits.toLocaleString("en-US");
-      $("summaryCost").textContent = currency.format(totalCost);
-      $("summaryleads").textContent = generatedGroups.length.toLocaleString("en-US");
-      $("resultNote").textContent = `${totalUnits} renewal${totalUnits === 1 ? "" : "s"} found across ${generatedGroups.length} lead${generatedGroups.length === 1 ? "" : "s"}.`;
-      $("summary").style.display = "block";
-
-      renderGroups(generatedGroups);
-      buildReviewRows();
-      renderPersonalReview();
-      renderPrintSummary(generatedGroups);
-      $("status").textContent = `Generated ${selectedMonthLabel} renewal lists successfully.`;
-      $("status").className = "status";
-    }
-
-    $("csvFile").addEventListener("change", async (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      try {
-        const text = await file.text();
-        const parsed = parseCSV(text);
-        headers = parsed.headers;
-        rawRows = parsed.data;
-
-        if (!headers.length || !rawRows.length) {
-          throw new Error("The CSV appears to be empty.");
+        if (monthKey(date) !== selectedMonth) {
+          return;
         }
 
-        const missingColumns = detectColumns();
-        if (missingColumns.length) {
-          rawRows = [];
-          throw new Error(
-            `The CSV is missing the following expected column${missingColumns.length === 1 ? "" : "s"}: ${missingColumns.join(", ")}.`
+
+        const statusCol =
+          detectedColumns.status;
+
+
+        const status =
+          statusCol
+            ? (row[statusCol] || "")
+                .trim()
+                .toLowerCase()
+            : "active";
+
+
+        if (status !== "active") {
+          return;
+        }
+
+
+        if (!unit) {
+
+          issues.push(
+            `Row ${index + 2}: missing Unit / Listing.`
           );
         }
 
-        $("status").textContent =
-          `${rawRows.length.toLocaleString("en-US")} records loaded. Select the renewal month and generate.`;
-        $("status").className = "status";
-      } catch (error) {
-        rawRows = [];
-        headers = [];
-        detectedColumns = { unit: "", lead: "", date: "", cost: "", listingId: "", status: "", issue: "" };
-        $("status").textContent = `Unable to read the CSV: ${error.message}`;
-        $("status").className = "status error";
-      }
-    });
 
-    $("generateBtn").addEventListener("click", generate);
+        if (!lead) {
 
-    $("clearBtn").addEventListener("click", () => {
-      rawRows = [];
-      headers = [];
-      generatedGroups = [];
-      generatedReviewRows = [];
-      generatedNonActiveRows = [];
-      detectedColumns = { unit: "", lead: "", date: "", cost: "", listingId: "", status: "", issue: "" };
-      $("csvFile").value = "";
-      $("summary").style.display = "none";
-      $("leadContainer").innerHTML = "";
-      $("printSummary").innerHTML = "";
-      $("openReviewBtn").style.display = "none";
-      $("openReviewBtn").textContent = "⚠️ Review Required (0)";
-      $("reviewContent").innerHTML = "";
-      $("reviewNote").textContent = "";
-      closeReviewModal();
-      $("unitSearch").value = "";
-      $("status").textContent = "Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or an lead of N/A will be excluded.";
-      $("status").className = "status";
-    });
+          issues.push(
+            `Row ${index + 2}: ${unit || "Unnamed unit"} is missing a lead.`
+          );
+        }
 
 
-    $("copyAllAsanaBtn").addEventListener("click", () => {
-      const text = generatedGroups
-        .flatMap(group => group.items.map(item => item.unit))
-        .join("\n");
-      copyText(text, "Entire unit list copied for Asana");
-    });
+        const groupName =
+          lead || "Unassigned lead";
 
 
-    $("openReviewBtn").addEventListener("click", openReviewModal);
-    $("closeReviewBtn").addEventListener("click", closeReviewModal);
-    $("downloadReviewBtn").addEventListener("click", downloadReviewExcel);
+        const item = {
 
-    $("reviewModal").addEventListener("click", (event) => {
-      if (event.target === $("reviewModal")) closeReviewModal();
-    });
+          unit:
+            unit ||
+            `Unnamed Unit (Row ${index + 2})`,
 
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeReviewModal();
-    });
+          lead:
+            groupName,
 
-    $("copyReviewBtn").addEventListener("click", () => {
-      copyText(buildReviewCopyText(), "Review list copied");
-    });
+          expires:
+            date,
 
-    $("unitSearch").addEventListener("input", (event) => {
-      const query = event.target.value.trim().toLowerCase();
-      document.querySelectorAll(".lead-card").forEach(card => {
-        card.classList.toggle("no-match", query && !card.dataset.search.includes(query));
+          cost:
+            parseMoney(row[costCol]),
+
+          listingId:
+            listingCol
+              ? (row[listingCol] || "").trim()
+              : ""
+        };
+
+
+        if (!grouped.has(groupName)) {
+
+          grouped.set(
+            groupName,
+            []
+          );
+        }
+
+
+        grouped
+          .get(groupName)
+          .push(item);
+
       });
-    });
 
-    const today = new Date();
-    $("renewalMonth").value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+
+      generatedGroups =
+        Array.from(
+          grouped.entries()
+        )
+        .map(([lead, items]) => {
+
+          items.sort(
+            (a, b) =>
+              a.expires - b.expires ||
+              a.unit.localeCompare(b.unit)
+          );
+
+
+          return {
+
+            lead,
+
+            items,
+
+            totalCost:
+              items.reduce(
+                (sum, item) =>
+                  sum + item.cost,
+                0
+              )
+          };
+
+        })
+        .sort(
+          (a, b) =>
+            a.lead.localeCompare(b.lead)
+        );
+
+
+      selectedMonthLabel =
+        monthLabel(selectedMonth);
+
+
+      const totalUnits =
+        generatedGroups.reduce(
+          (sum, group) =>
+            sum + group.items.length,
+          0
+        );
+
+
+      const totalCost =
+        generatedGroups.reduce(
+          (sum, group) =>
+            sum + group.totalCost,
+          0
+        );
+
+
+      $("summaryMonth").textContent =
+        selectedMonthLabel;
+
+
+      $("summaryUnits").textContent =
+        totalUnits.toLocaleString("en-US");
+
+
+      $("summaryCost").textContent =
+        currency.format(totalCost);
+
+
+      $("summaryleads").textContent =
+        generatedGroups.length
+          .toLocaleString("en-US");
+
+
+      $("resultNote").textContent =
+        `${totalUnits} renewal${totalUnits === 1 ? "" : "s"} found across ${generatedGroups.length} lead${generatedGroups.length === 1 ? "" : "s"}.`;
+
+
+      $("summary").style.display =
+        "block";
+
+
+      renderGroups(generatedGroups);
+
+      buildReviewRows();
+
+      renderPersonalReview();
+
+      renderPrintSummary(generatedGroups);
+
+
+      $("status").textContent =
+        `Generated ${selectedMonthLabel} renewal lists successfully.`;
+
+
+      $("status").className =
+        "status";
+    }
+
+
+    $("csvFile").addEventListener(
+      "change",
+      async (event) => {
+
+        const file =
+          event.target.files[0];
+
+        if (!file) return;
+
+
+        try {
+
+          const text =
+            await file.text();
+
+
+          const parsed =
+            parseCSV(text);
+
+
+          headers =
+            parsed.headers;
+
+
+          rawRows =
+            parsed.data;
+
+
+          if (
+            !headers.length ||
+            !rawRows.length
+          ) {
+
+            throw new Error(
+              "The CSV appears to be empty."
+            );
+          }
+
+
+          const missingColumns =
+            detectColumns();
+
+
+          if (missingColumns.length) {
+
+            rawRows = [];
+
+            throw new Error(
+              `The CSV is missing the following expected column${missingColumns.length === 1 ? "" : "s"}: ${missingColumns.join(", ")}.`
+            );
+          }
+
+
+          $("status").textContent =
+            `${rawRows.length.toLocaleString("en-US")} records loaded. Select the renewal month and generate.`;
+
+
+          $("status").className =
+            "status";
+
+
+        } catch (error) {
+
+          rawRows = [];
+
+          headers = [];
+
+
+          detectedColumns = {
+            unit: "",
+            lead: "",
+            date: "",
+            cost: "",
+            listingId: "",
+            status: "",
+            issue: ""
+          };
+
+
+          $("status").textContent =
+            `Unable to read the CSV: ${error.message}`;
+
+
+          $("status").className =
+            "status error";
+        }
+      }
+    );
+
+
+    $("generateBtn")
+      .addEventListener(
+        "click",
+        generate
+      );
+
+
+    $("clearBtn")
+      .addEventListener(
+        "click",
+        () => {
+
+          rawRows = [];
+
+          headers = [];
+
+          generatedGroups = [];
+
+          generatedReviewRows = [];
+
+          generatedNonActiveRows = [];
+
+
+          detectedColumns = {
+            unit: "",
+            lead: "",
+            date: "",
+            cost: "",
+            listingId: "",
+            status: "",
+            issue: ""
+          };
+
+
+          $("csvFile").value = "";
+
+          $("summary").style.display =
+            "none";
+
+          $("leadContainer").innerHTML =
+            "";
+
+          $("printSummary").innerHTML =
+            "";
+
+          $("openReviewBtn").style.display =
+            "none";
+
+          $("openReviewBtn").textContent =
+            "⚠️ Review Required (0)";
+
+          $("reviewContent").innerHTML =
+            "";
+
+          $("reviewNote").textContent =
+            "";
+
+          closeReviewModal();
+
+          $("unitSearch").value =
+            "";
+
+          $("status").textContent =
+            "Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or a lead of N/A will be excluded.";
+
+          $("status").className =
+            "status";
+        }
+      );
+
+
+    $("copyAllAsanaBtn")
+      .addEventListener(
+        "click",
+        () => {
+
+          const text =
+            generatedGroups
+              .flatMap(
+                group =>
+                  group.items.map(
+                    item => item.unit
+                  )
+              )
+              .join("\n");
+
+
+          copyText(
+            text,
+            "Entire unit list copied for Asana"
+          );
+        }
+      );
+
+
+    $("openReviewBtn")
+      .addEventListener(
+        "click",
+        openReviewModal
+      );
+
+
+    $("closeReviewBtn")
+      .addEventListener(
+        "click",
+        closeReviewModal
+      );
+
+
+    $("downloadReviewBtn")
+      .addEventListener(
+        "click",
+        downloadReviewExcel
+      );
+
+
+    $("reviewModal")
+      .addEventListener(
+        "click",
+        (event) => {
+
+          if (
+            event.target ===
+            $("reviewModal")
+          ) {
+
+            closeReviewModal();
+          }
+        }
+      );
+
+
+    document.addEventListener(
+      "keydown",
+      (event) => {
+
+        if (event.key === "Escape") {
+          closeReviewModal();
+        }
+      }
+    );
+
+
+    $("copyReviewBtn")
+      .addEventListener(
+        "click",
+        () => {
+
+          copyText(
+            buildReviewCopyText(),
+            "Review list copied"
+          );
+        }
+      );
+
+
+    $("unitSearch")
+      .addEventListener(
+        "input",
+        (event) => {
+
+          const query =
+            event.target.value
+              .trim()
+              .toLowerCase();
+
+
+          document
+            .querySelectorAll(".lead-card")
+            .forEach(card => {
+
+              card.classList.toggle(
+                "no-match",
+                query &&
+                !card.dataset.search.includes(query)
+              );
+            });
+        }
+      );
+
+
+    const today =
+      new Date();
+
+
+    $("renewalMonth").value =
+      `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+
   </script>
+
 </body>
 </html>
