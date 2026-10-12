@@ -455,7 +455,7 @@
     }
     /* Dedicated clean print layouts: never print the open dialog or overlay. */
     @media print {
-      @page { size: letter portrait; margin: 0.55in; }
+      @page { size: letter portrait; margin: 0.35in; }
       html, body, body.modal-open { overflow: visible !important; height: auto !important; }
       #renewalModal, #reviewModal { display: none !important; }
       #printSummary, #renewalPrint { display: none !important; }
@@ -471,6 +471,18 @@
       #renewalPrint th, #renewalPrint td { padding: 5px 4px; overflow-wrap: anywhere; }
       #renewalPrint th.amount, #renewalPrint td.amount { text-align: right; white-space: nowrap; }
       #renewalPrint tr { break-inside: avoid; }
+      /* Prevent unit names, manager names and headers from splitting across lines. */
+      #printSummary table, #renewalPrint table { width: 100% !important; min-width: 0 !important; table-layout: auto !important; font-size: 7.5px !important; }
+      #printSummary th, #printSummary td,
+      #renewalPrint th, #renewalPrint td {
+        white-space: nowrap !important;
+        overflow-wrap: normal !important;
+        word-break: normal !important;
+        padding: 4px 3px !important;
+      }
+      #printSummary .print-table, #renewalPrint .print-table { width: 100% !important; }
+      #printSummary, #renewalPrint { max-width: 100% !important; }
+
     }
 
     /* Organized summary actions: full-width note and aligned controls. */
@@ -1091,6 +1103,7 @@
       - Active listings
       - Multi-Listing
       - Multi-Listings
+      - Need to Renew
 
       The Multi-Listing check ignores capitalization,
       spaces, underscores, and hyphens.
@@ -1123,13 +1136,14 @@
         if (isExcludedlead(lead)) return;
 
 
-        // Ignore Multi-Listings completely from the Exception Report
+        // Exclude Multi-Listings and Need to Renew from the Exception Report
         const normalizedStatusKey =
           normalizedStatus.replace(/[\s_-]+/g, "");
 
         if (
           normalizedStatusKey === "multilisting" ||
-          normalizedStatusKey === "multilistings"
+          normalizedStatusKey === "multilistings" ||
+          normalizedStatusKey === "needtorenew"
         ) {
           return;
         }
