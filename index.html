@@ -453,6 +453,37 @@
         break-inside: avoid;
       }
     }
+    /* Dedicated clean print layouts: never print the open dialog or overlay. */
+    @media print {
+      @page { size: letter portrait; margin: 0.55in; }
+      html, body, body.modal-open { overflow: visible !important; height: auto !important; }
+      #renewalModal, #reviewModal { display: none !important; }
+      #printSummary, #renewalPrint { display: none !important; }
+      body.print-renewal #renewalPrint { display: block !important; }
+      body:not(.print-renewal) #printSummary { display: block !important; }
+      body.print-renewal #printSummary { display: none !important; }
+      #renewalPrint { padding: 0 !important; }
+      #renewalPrint h2 { font-size: 19px; margin: 0 0 8px; }
+      #renewalPrint h3 { font-size: 13px; margin: 16px 0 7px; }
+      #renewalPrint p { margin: 0 0 12px; font-size: 11px; }
+      #renewalPrint .table-wrap { overflow: visible !important; }
+      #renewalPrint table { min-width: 0 !important; table-layout: auto; font-size: 9px; }
+      #renewalPrint th, #renewalPrint td { padding: 5px 4px; overflow-wrap: anywhere; }
+      #renewalPrint th.amount, #renewalPrint td.amount { text-align: right; white-space: nowrap; }
+      #renewalPrint tr { break-inside: avoid; }
+    }
+
+    /* Organized summary actions: full-width note and aligned controls. */
+    .renewal-controls { margin-top: 18px; }
+    .renewal-controls #resultNote { margin: 0 0 14px; }
+    .renewal-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .renewal-actions .search-wrap { flex: 1 1 260px; min-width: 220px; max-width: none; }
+    .renewal-actions button { white-space: nowrap; min-height: 44px; }
+    .renewal-actions .search-wrap input { min-height: 44px; }
+    @media (max-width: 700px) {
+      .renewal-actions .search-wrap { flex-basis: 100%; }
+      .renewal-actions button { flex: 1 1 auto; }
+    }
   </style>
 </head>
 
@@ -515,22 +546,17 @@
 
       </div>
 
-      <div class="toolbar">
-
-        <div>
-          <div id="resultNote" class="status"></div>
-
-          <div class="search-wrap" style="margin-top:10px;">
+      <div class="renewal-controls">
+        <div id="resultNote" class="status"></div>
+        <div class="renewal-actions">
+          <div class="search-wrap">
             <input id="unitSearch" type="search" placeholder="🔍 Search units or Asset Managers" />
           </div>
-        </div>
-
-        <div class="button-row" style="margin-top:0;">
+          <button id="openRenewalBtn" class="outline">✅ Needs Renewal (0)</button>
           <button id="openReviewBtn" class="outline review-launch">⚠️ Review Required (0)</button>
-          <button id="copyAllAsanaBtn" class="primary">📋 Copy Entire Monthly Unit List</button>
+          <button id="copyAllAsanaBtn" class="primary">📋 Copy Monthly Unit List</button>
           <button onclick="window.print()" class="secondary">🖨 Print Summary</button>
         </div>
-
       </div>
 
     </section>
@@ -538,7 +564,18 @@
     <main id="leadContainer" class="lead-container"></main>
 
     <section id="printSummary" class="print-summary"></section>
+    <section id="renewalPrint" class="print-summary"></section>
 
+  </div>
+
+  <div id="renewalModal" class="review-modal" aria-hidden="true">
+    <div class="review-window" role="dialog" aria-modal="true" aria-labelledby="renewalTitle">
+      <div class="review-window-header"><div><h2 id="renewalTitle">VRBO – Needs Renewal</h2><p>Selected subscriptions to renew, summarized by entity for Danielle.</p></div><button id="closeRenewalBtn" class="close-review" aria-label="Close renewal report">×</button></div>
+      <div class="review-window-body">
+        <div class="review-window-actions"><button id="copyRenewalBtn" class="outline">📋 Copy Entity Summary</button><button id="printRenewalBtn" class="primary">🖨 Print / Save PDF</button></div>
+        <div id="renewalReport"></div>
+      </div>
+    </div>
   </div>
 
   <div id="reviewModal" class="review-modal" aria-hidden="true">
@@ -911,6 +948,9 @@
       showToast(message || "Copied");
     }
 
+
+    let generatedItems = [];
+    let selectedRenewals = new Set();
 
     function buildAsanaTasks(group) {
       return group.items.map(item => item.unit).join("\n");
@@ -1419,7 +1459,7 @@
         document.createElement("a");
 
 
-      const today =
+     const today =
         new Date()
           .toISOString()
           .slice(0, 10);
@@ -1441,6 +1481,66 @@
 
       showToast("Excel file downloaded");
     }
+
+
+      function entityFromUnit(unit) {
+       const name = String(unit || "").trim().toUpperCase();
+       if (name.startsWith("KHE")) return "KHE";
+       if (name.startsWith("GEMMA")) return "GEMMA";
+       if (name.startsWith("HC")) return "HC";
+       if (name.startsWith("CMI")) return "CMI";
+       return "OW";
+     }
+
+     function renewalSummary() {
+       const chosen = generatedItems.filter(item => selectedRenewals.has(item.id));
+       const groups = new Map();
+       chosen.forEach(item => {
+         if (!groups.has(item.entity)) groups.set(item.entity, []);
+         groups.get(item.entity).push(item);
+       });
+       return { chosen, groups: [...groups].sort((a,b) => a[0].localeCompare(b[0])) };
+     }
+
+     function renewalReportHTML() {
+       const {chosen, groups} = renewalSummary();
+       const total = chosen.reduce((sum,item) => sum + item.cost,0);
+       const entityRows = groups.map(([entity,items]) => `<tr><td>${escapeHTML(entity)}</td><td>${items.length}</td><td class="amount">${currency.format(items.reduce((sum,item)=>sum+item.cost,0))}</td></tr>`).join("");
+       const detailRows = groups.flatMap(([entity,items]) => items.map(item => `<tr><td>${escapeHTML(entity)}</td><td>${escapeHTML(item.unit)}</td><td>${escapeHTML(item.lead)}</td><td>${escapeHTML(prettyDate(item.expires))}</td><td>${escapeHTML(item.listingId)}</td><td class="amount">${currency.format(item.cost)}</td></tr>`)).join("");
+       return `<h2>VRBO Renewals – Pending Processing</h2><p><strong>${escapeHTML(selectedMonthLabel || 'Selected Month')}</strong> · ${chosen.length} selected renewals · <strong>${currency.format(total)}</strong></p>
+
+         <h3>Summary by Entity</h3><div class="table-wrap"><table><thead><tr><th>Entity</th><th>Renewal Count</th><th class="amount">Total Amount</th></tr></thead><tbody>${entityRows}<tr><td><strong>Grand Total</strong></td><td><strong>${chosen.length}</strong></td><td class="amount"><strong>${currency.format(total)}</strong></td></tr></tbody></table></div>
+         <h3>Selected Listings</h3><div class="table-wrap"><table><thead><tr><th>Entity</th><th>Unit</th><th>Asset Manager</th><th>Expires</th><th>VRBO ID</th><th class="amount">Fee</th></tr></thead><tbody>${detailRows}</tbody></table></div>`;
+     }
+
+     function renderRenewalReport() {
+       const html = renewalReportHTML();
+       $("renewalReport").innerHTML = html;
+       $("renewalPrint").innerHTML = html;
+       $("openRenewalBtn").textContent = `✅ Needs Renewal (${selectedRenewals.size})`;
+     }
+     function closeRenewal() {
+       $("renewalModal").classList.remove("open");
+       $("renewalModal").setAttribute("aria-hidden", "true");
+       document.body.classList.remove("modal-open");
+     }
+     $("openRenewalBtn").addEventListener("click", () => {
+       $("renewalModal").classList.add("open");
+       $("renewalModal").setAttribute("aria-hidden", "false");
+       document.body.classList.add("modal-open");
+     });
+     $("closeRenewalBtn").addEventListener("click", closeRenewal);
+     $("renewalModal").addEventListener("click", event => { if(event.target === $("renewalModal")) closeRenewal(); });
+     $("copyRenewalBtn").addEventListener("click", () => {
+       const {chosen,groups} = renewalSummary();
+       const lines = [`VRBO Needs Renewal — ${selectedMonthLabel}`, ...groups.map(([entity,items]) => `${entity}: ${items.length} renewals — ${currency.format(items.reduce((s,i)=>s+i.cost,0))}`), `TOTAL: ${chosen.length} renewals — ${currency.format(chosen.reduce((s,i)=>s+i.cost,0))}`];
+       copyText(lines.join("\n"), "Entity summary copied");
+     });
+     $("printRenewalBtn").addEventListener("click", () => {
+       document.body.classList.add("print-renewal");
+       window.print();
+     });
+     window.addEventListener("afterprint", () => document.body.classList.remove("print-renewal"));
 
 
     function openReviewModal() {
@@ -1719,6 +1819,8 @@
       let blankExpirationCount = 0;
 
 
+      generatedItems = [];
+      selectedRenewals.clear();
       rawRows.forEach((row, index) => {
 
         const unit =
@@ -1774,7 +1876,7 @@
             : "active";
 
 
-        if (status !== "active") {
+        if (status !== "active" && status !== "need to renew") {
           return;
         }
 
@@ -1817,8 +1919,13 @@
           listingId:
             listingCol
               ? (row[listingCol] || "").trim()
-              : ""
+              : "",
+          id: String(index),
+          entity: entityFromUnit(unit),
+          renewalStatus: status
         };
+        generatedItems.push(item);
+        if (status === "need to renew") selectedRenewals.add(item.id);
 
 
         if (!grouped.has(groupName)) {
@@ -1923,6 +2030,7 @@
       renderPersonalReview();
 
       renderPrintSummary(generatedGroups);
+      renderRenewalReport();
 
 
       $("status").textContent =
@@ -1993,7 +2101,7 @@
 
           $("status").className =
             "status";
-
+          generate();
 
         } catch (error) {
 
@@ -2009,7 +2117,8 @@
             cost: "",
             listingId: "",
             status: "",
-            issue: ""
+            issue: "",
+       entity: ""
           };
 
 
@@ -2023,6 +2132,8 @@
       }
     );
 
+
+    $("renewalMonth").addEventListener("change", () => { if (rawRows.length) generate(); });
 
     $("generateBtn")
       .addEventListener(
@@ -2054,7 +2165,8 @@
             cost: "",
             listingId: "",
             status: "",
-            issue: ""
+            issue: "",
+       entity: ""
           };
 
 
