@@ -2222,27 +2222,22 @@
 
 
     $("copyAllAsanaBtn")
-      .addEventListener(
-        "click",
-        () => {
+      .addEventListener("click", () => {
+        const text = generatedGroups
+          .flatMap(group => group.items)
+          .sort((a, b) =>
+            a.expires - b.expires ||
+            a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: "base" })
+          )
+          .map(item => {
+            const date = `${String(item.expires.getMonth() + 1).padStart(2, "0")}/${String(item.expires.getDate()).padStart(2, "0")}`;
+            const listingId = item.listingId ? ` - ${item.listingId}` : "";
+            return `${item.unit}${listingId} (${date})`;
+          })
+          .join("\n");
 
-          const text =
-            generatedGroups
-              .flatMap(
-                group =>
-                  group.items.map(
-                    item => item.unit
-                  )
-              )
-              .join("\n");
-
-
-          copyText(
-            text,
-            "Entire unit list copied for Asana"
-          );
-        }
-      );
+        copyText(text, "Monthly unit list copied in date order");
+      });
 
 
     $("openReviewBtn")
