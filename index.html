@@ -564,7 +564,8 @@
           <div class="search-wrap">
             <input id="unitSearch" type="search" placeholder="🔍 Search units or Asset Managers" />
           </div>
-          <button id="openRenewalBtn" class="outline">✅ Needs Renewal (0)</button>
+          <button id="openMonthlyBtn" class="outline">📋 Danielle / Asana Renewals (0)</button>
+          <button id="openBookingBtn" class="outline">💳 Pay Per Booking (0)</button>
           <button id="openReviewBtn" class="outline review-launch">⚠️ Review Required (0)</button>
           <button id="copyAllAsanaBtn" class="primary">📋 Copy Monthly Unit List</button>
           <button onclick="window.print()" class="secondary">🖨 Print Summary</button>
@@ -582,9 +583,9 @@
 
   <div id="renewalModal" class="review-modal" aria-hidden="true">
     <div class="review-window" role="dialog" aria-modal="true" aria-labelledby="renewalTitle">
-      <div class="review-window-header"><div><h2 id="renewalTitle">VRBO – Needs Renewal</h2><p>Selected subscriptions to renew, summarized by entity for Danielle.</p></div><button id="closeRenewalBtn" class="close-review" aria-label="Close renewal report">×</button></div>
+      <div class="review-window-header"><div><h2 id="renewalTitle">VRBO – Danielle / Asana Renewals</h2><p>Monthly renewals and manually flagged renewals, separated with an entity summary.</p></div><button id="closeRenewalBtn" class="close-review" aria-label="Close renewal report">×</button></div>
       <div class="review-window-body">
-        <div class="review-window-actions"><button id="copyRenewalBtn" class="outline">📋 Copy Entity Summary</button><button id="printRenewalBtn" class="primary">🖨 Print / Save PDF</button></div>
+        <div class="review-window-actions"><button id="copyRenewalBtn" class="outline">📋 Copy Report</button><button id="printRenewalBtn" class="primary">🖨 Print / Save PDF</button></div>
         <div id="renewalReport"></div>
       </div>
     </div>
@@ -642,7 +643,8 @@
       cost: "",
       listingId: "",
       status: "",
-      issue: ""
+      issue: "",
+      owner: ""
     };
 
     const $ = (id) => document.getElementById(id);
@@ -798,6 +800,9 @@
         "subscription status",
         "vrbo status"
       ]);
+
+      detectedColumns.owner = guessHeader(["owner", "owner name", "property owner", "homeowner"]);
+      detectedColumns.listingModel = guessHeader(["listing model", "payment model", "subscription model"]);
 
       detectedColumns.issue = guessHeader([
         "issues",
@@ -963,6 +968,28 @@
 
     let generatedItems = [];
     let selectedRenewals = new Set();
+    let reportMode = "flagged";
+    let payBookingItems = [];
+
+    function isPayBookingStatus(status) {
+      return /^(pay\s*(?:per|by)\s*booking|pay\s*per\s*reservation|ppb)$/i.test(String(status || "").trim().replace(/[-_]+/g, " "));
+    }
+
+    function buildPayBookingItems() {
+      const col = detectedColumns;
+      payBookingItems = rawRows.filter(row => {
+        const status = col.status ? row[col.status] : "";
+        const model = col.listingModel ? row[col.listingModel] : "";
+        return String(status).trim().toLowerCase() !== "inactive" && isPayBookingStatus(model);
+      }).map(row => {
+        const unit = (row[col.unit] || "").trim();
+        const lead = col.lead ? (row[col.lead] || "").trim() : "";
+        return { unit,
+          entity: entityFromUnit(unit, lead), lead: lead || "Unassigned Asset Manager",
+          listingId: col.listingId ? (row[col.listingId] || "").trim() : "" };
+      }).filter(item => item.unit);
+      $("openBookingBtn").textContent = `💳 Pay Per Booking (${payBookingItems.length})`;
+    }
 
     function buildAsanaTasks(group) {
       return group.items.map(item => item.unit).join("\n");
@@ -1143,7 +1170,8 @@
         if (
           normalizedStatusKey === "multilisting" ||
           normalizedStatusKey === "multilistings" ||
-          normalizedStatusKey === "needtorenew"
+          normalizedStatusKey === "needtorenew" ||
+          normalizedStatusKey === "inactive"
         ) {
           return;
         }
@@ -1497,8 +1525,10 @@
     }
 
 
-      function entityFromUnit(unit) {
+      function entityFromUnit(unit, lead = "") {
        const name = String(unit || "").trim().toUpperCase();
+       const manager = String(lead || "").trim().toUpperCase();
+       if (manager.includes("PRESERVE") || name.startsWith("PRESERVE")) return "Preserve";
        if (name.startsWith("KHE")) return "KHE";
        if (name.startsWith("GEMMA")) return "GEMMA";
        if (name.startsWith("HC")) return "HC";
@@ -1507,38 +1537,81 @@
      }
 
      function renewalSummary() {
-       const chosen = generatedItems.filter(item => selectedRenewals.has(item.id));
+       const monthly = generatedItems.filter(item => item.renewalStatus === "active" && item.expires && monthKey(item.expires) === $("renewalMonth").value);
+       const flagged = generatedItems.filter(item => item.renewalStatus === "need to renew");
+       const chosen = [...monthly, ...flagged];
        const groups = new Map();
        chosen.forEach(item => {
          if (!groups.has(item.entity)) groups.set(item.entity, []);
          groups.get(item.entity).push(item);
        });
-       return { chosen, groups: [...groups].sort((a,b) => a[0].localeCompare(b[0])) };
+       return {monthly, flagged, chosen, groups: [...groups].sort((a,b) => a[0].localeCompare(b[0]))};
+     }
+
+     function payBookingReportHTML() {
+       const entities = new Map();
+       payBookingItems.forEach(item => {
+         if (!entities.has(item.entity)) entities.set(item.entity, new Map());
+         const managers = entities.get(item.entity);
+         if (!managers.has(item.lead)) managers.set(item.lead, []);
+         managers.get(item.lead).push(item);
+       });
+       const sections = [...entities].sort((a,b) => a[0].localeCompare(b[0])).map(([entity, managers]) => {
+         const count = [...managers.values()].reduce((n, items) => n + items.length, 0);
+         const rows = [...managers].sort((a,b) => a[0].localeCompare(b[0])).flatMap(([manager, items]) =>
+           items.sort((a,b) => a.unit.localeCompare(b.unit, undefined, {numeric:true})).map((item,i) =>
+             `<tr><td>${i === 0 ? escapeHTML(manager) : ""}</td><td>${escapeHTML(item.unit)}</td><td>${escapeHTML(item.listingId)}</td></tr>`
+           )).join("");
+         return `<h3>${escapeHTML(entity)} — ${count} listing${count===1?"":"s"} / ${managers.size} Asset Manager${managers.size===1?"":"s"}</h3><div class="table-wrap"><table><thead><tr><th>Asset Manager</th><th>Unit / Listing</th><th>VRBO Listing ID</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+       }).join("");
+       return `<h2>VRBO — Pay Per Booking</h2><p>${payBookingItems.length} listings across ${entities.size} entities · All months · Excludes inactive listings</p>${sections || "<p>No Pay Per Booking listings found in the uploaded CSV.</p>"}`;
      }
 
      function renewalReportHTML() {
-       const {chosen, groups} = renewalSummary();
-       const total = chosen.reduce((sum,item) => sum + item.cost,0);
-       const entityRows = groups.map(([entity,items]) => `<tr><td>${escapeHTML(entity)}</td><td>${items.length}</td><td class="amount">${currency.format(items.reduce((sum,item)=>sum+item.cost,0))}</td></tr>`).join("");
-       const detailRows = groups.flatMap(([entity,items]) => items.map(item => `<tr><td>${escapeHTML(entity)}</td><td>${escapeHTML(item.unit)}</td><td>${escapeHTML(item.lead)}</td><td>${escapeHTML(prettyDate(item.expires))}</td><td>${escapeHTML(item.listingId)}</td><td class="amount">${currency.format(item.cost)}</td></tr>`)).join("");
-       return `<h2>VRBO Renewals – Pending Processing</h2><p><strong>${escapeHTML(selectedMonthLabel || 'Selected Month')}</strong> · ${chosen.length} selected renewals · <strong>${currency.format(total)}</strong></p>
-
-         <h3>Summary by Entity</h3><div class="table-wrap"><table><thead><tr><th>Entity</th><th>Renewal Count</th><th class="amount">Total Amount</th></tr></thead><tbody>${entityRows}<tr><td><strong>Grand Total</strong></td><td><strong>${chosen.length}</strong></td><td class="amount"><strong>${currency.format(total)}</strong></td></tr></tbody></table></div>
-         <h3>Selected Listings</h3><div class="table-wrap"><table><thead><tr><th>Entity</th><th>Unit</th><th>Asset Manager</th><th>Expires</th><th>VRBO ID</th><th class="amount">Fee</th></tr></thead><tbody>${detailRows}</tbody></table></div>`;
+       if (reportMode === "booking") return payBookingReportHTML();
+       const {monthly, flagged, chosen, groups} = renewalSummary();
+       const sum = items => items.reduce((n,item) => n + item.cost, 0);
+       const money = items => currency.format(sum(items));
+       const entityRows = groups.map(([entity, items]) => {
+         const m = items.filter(i => i.renewalStatus === "active");
+         const f = items.filter(i => i.renewalStatus === "need to renew");
+         return `<tr><td>${escapeHTML(entity)}</td><td>${m.length}</td><td>${f.length}</td><td><strong>${items.length}</strong></td><td class="amount">${money(m)}</td><td class="amount">${money(f)}</td><td class="amount"><strong>${money(items)}</strong></td></tr>`;
+       }).join("");
+       const detail = (items, title, note) => {
+         const sorted = [...items].sort((a,b) => a.entity.localeCompare(b.entity) || a.lead.localeCompare(b.lead) || ((a.expires?.getTime() || 0) - (b.expires?.getTime() || 0)) || a.unit.localeCompare(b.unit,undefined,{numeric:true}));
+         const rows = sorted.map(item => `<tr><td>${escapeHTML(item.entity)}</td><td>${escapeHTML(item.unit)}</td><td>${escapeHTML(item.lead)}</td><td>${item.expires ? escapeHTML(prettyDate(item.expires)) : "—"}</td><td>${escapeHTML(item.listingId || "")}</td><td class="amount">${currency.format(item.cost)}</td></tr>`).join("");
+         return `<h3>${escapeHTML(title)} (${items.length}) — ${money(items)}</h3><p>${escapeHTML(note)}</p><div class="table-wrap"><table><thead><tr><th>Entity</th><th>Unit</th><th>Asset Manager</th><th>Expires</th><th>VRBO ID</th><th class="amount">Fee</th></tr></thead><tbody>${rows || '<tr><td colspan="6">No listings in this group.</td></tr>'}</tbody></table></div>`;
+       };
+       return `<h2>VRBO Renewals — Danielle / Asana</h2><p><strong>${escapeHTML(selectedMonthLabel)}</strong> · ${chosen.length} total listings · <strong>${money(chosen)}</strong></p>
+         <h3>Summary by Entity</h3><div class="table-wrap"><table><thead><tr><th>Entity</th><th>Monthly</th><th>Flagged</th><th>Total</th><th class="amount">Monthly Fees</th><th class="amount">Flagged Fees</th><th class="amount">Total Fees</th></tr></thead><tbody>${entityRows}<tr><td><strong>Grand Total</strong></td><td>${monthly.length}</td><td>${flagged.length}</td><td><strong>${chosen.length}</strong></td><td class="amount">${money(monthly)}</td><td class="amount">${money(flagged)}</td><td class="amount"><strong>${money(chosen)}</strong></td></tr></tbody></table></div>
+         ${detail(monthly, `Monthly Renewals — ${selectedMonthLabel}`, "Active listings expiring during the selected month.")}
+         ${detail(flagged, "Needs Renewal — Manually Flagged", "All listings marked Need to Renew, regardless of expiration month, including new units.")}`;
      }
 
      function renderRenewalReport() {
        const html = renewalReportHTML();
        $("renewalReport").innerHTML = html;
        $("renewalPrint").innerHTML = html;
-       $("openRenewalBtn").textContent = `✅ Needs Renewal (${selectedRenewals.size})`;
+       $("renewalTitle").textContent = reportMode === "booking" ? "VRBO — Pay Per Booking" : "VRBO — Danielle / Asana Renewals";
+       const reportSubtitle = $("renewalTitle").parentElement.querySelector("p");
+       if (reportSubtitle) reportSubtitle.textContent = reportMode === "booking" ? "All pay-per-booking listings, grouped by entity and Asset Manager." : "Monthly and manually flagged renewals, with an entity summary.";
+       $("openMonthlyBtn").textContent = `📋 Danielle / Asana Renewals (${renewalSummary().chosen.length})`;
      }
      function closeRenewal() {
        $("renewalModal").classList.remove("open");
        $("renewalModal").setAttribute("aria-hidden", "true");
        document.body.classList.remove("modal-open");
      }
-     $("openRenewalBtn").addEventListener("click", () => {
+     $("openMonthlyBtn").addEventListener("click", () => {
+       reportMode = "combined";
+       renderRenewalReport();
+       $("renewalModal").classList.add("open");
+       $("renewalModal").setAttribute("aria-hidden", "false");
+       document.body.classList.add("modal-open");
+     });
+     $("openBookingBtn").addEventListener("click", () => {
+       reportMode = "booking";
+       renderRenewalReport();
        $("renewalModal").classList.add("open");
        $("renewalModal").setAttribute("aria-hidden", "false");
        document.body.classList.add("modal-open");
@@ -1546,9 +1619,15 @@
      $("closeRenewalBtn").addEventListener("click", closeRenewal);
      $("renewalModal").addEventListener("click", event => { if(event.target === $("renewalModal")) closeRenewal(); });
      $("copyRenewalBtn").addEventListener("click", () => {
-       const {chosen,groups} = renewalSummary();
-       const lines = [`VRBO Needs Renewal — ${selectedMonthLabel}`, ...groups.map(([entity,items]) => `${entity}: ${items.length} renewals — ${currency.format(items.reduce((s,i)=>s+i.cost,0))}`), `TOTAL: ${chosen.length} renewals — ${currency.format(chosen.reduce((s,i)=>s+i.cost,0))}`];
-       copyText(lines.join("\n"), "Entity summary copied");
+       if (reportMode === "booking") {
+         const lines = ["VRBO Pay Per Booking — All Months", ...payBookingItems.sort((a,b) => a.entity.localeCompare(b.entity) || a.lead.localeCompare(b.lead) || a.unit.localeCompare(b.unit)).map(item => `${item.entity} | ${item.lead} | ${item.unit} | ${item.listingId}`)];
+         copyText(lines.join("\n"), "Pay Per Booking list copied");
+         return;
+       }
+       const {monthly, flagged, chosen, groups} = renewalSummary();
+       const section = (title,items) => [title, ...items.sort((a,b) => a.entity.localeCompare(b.entity) || a.lead.localeCompare(b.lead) || a.unit.localeCompare(b.unit)).map(i => `${i.entity} | ${i.unit} | ${i.listingId} | ${i.lead} | ${i.expires ? prettyDate(i.expires) : "No expiration date"} | ${currency.format(i.cost)}`)];
+       const lines = [`VRBO Renewals — Danielle / Asana — ${selectedMonthLabel}`, "SUMMARY BY ENTITY", ...groups.map(([entity,items]) => `${entity}: ${items.length} listings — ${currency.format(items.reduce((s,i)=>s+i.cost,0))}`), `TOTAL: ${chosen.length} listings — ${currency.format(chosen.reduce((s,i)=>s+i.cost,0))}`, "", ...section(`MONTHLY RENEWALS (${monthly.length})`,monthly), "", ...section(`NEEDS RENEWAL — FLAGGED (${flagged.length})`,flagged)];
+       copyText(lines.join("\n"), "Danielle / Asana report copied");
      });
      $("printRenewalBtn").addEventListener("click", () => {
        document.body.classList.add("print-renewal");
@@ -1855,15 +1934,13 @@
         }
 
 
-        if (!rawDate) {
-
-          blankExpirationCount++;
-
-          return;
-        }
+        const statusCol = detectedColumns.status;
+        const status = statusCol ? (row[statusCol] || "").trim().toLowerCase() : "active";
+        if (status !== "active" && status !== "need to renew") return;
+        if (!rawDate && status === "active") { blankExpirationCount++; return; }
 
 
-        if (!date) {
+        if (!date && rawDate) {
 
           issues.push(
             `Row ${index + 2}: invalid expiration date for ${unit || "unnamed unit"} (${rawDate}).`
@@ -1873,26 +1950,7 @@
         }
 
 
-        if (monthKey(date) !== selectedMonth) {
-          return;
-        }
-
-
-        const statusCol =
-          detectedColumns.status;
-
-
-        const status =
-          statusCol
-            ? (row[statusCol] || "")
-                .trim()
-                .toLowerCase()
-            : "active";
-
-
-        if (status !== "active" && status !== "need to renew") {
-          return;
-        }
+        if (status === "active" && (!date || monthKey(date) !== selectedMonth)) return;
 
 
         if (!unit) {
@@ -1935,13 +1993,14 @@
               ? (row[listingCol] || "").trim()
               : "",
           id: String(index),
-          entity: entityFromUnit(unit),
+          entity: entityFromUnit(unit, lead),
           renewalStatus: status
         };
         generatedItems.push(item);
         if (status === "need to renew") selectedRenewals.add(item.id);
 
 
+        if (status !== "active") return;
         if (!grouped.has(groupName)) {
 
           grouped.set(
@@ -2044,6 +2103,7 @@
       renderPersonalReview();
 
       renderPrintSummary(generatedGroups);
+      buildPayBookingItems();
       renderRenewalReport();
 
 
@@ -2132,6 +2192,7 @@
             listingId: "",
             status: "",
             issue: "",
+            owner: "",
        entity: ""
           };
 
@@ -2170,7 +2231,8 @@
           generatedReviewRows = [];
 
           generatedNonActiveRows = [];
-
+          payBookingItems = [];
+          $("openBookingBtn").textContent = "💳 Pay Per Booking (0)";
 
           detectedColumns = {
             unit: "",
@@ -2180,6 +2242,7 @@
             listingId: "",
             status: "",
             issue: "",
+            owner: "",
        entity: ""
           };
 
