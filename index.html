@@ -528,7 +528,7 @@
       </div>
 
       <div id="status" class="status">
-        Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or an Asset Manager of N/A will be excluded.
+        Upload a Notion CSV, select the renewal month, and generate. Annual subscriptions require expiration dates; Pay Per Booking listings do not. Asset Managers marked N/A are excluded.
       </div>
     </section>
 
@@ -980,7 +980,7 @@
       payBookingItems = rawRows.filter(row => {
         const status = col.status ? row[col.status] : "";
         const model = col.listingModel ? row[col.listingModel] : "";
-        return String(status).trim().toLowerCase() !== "inactive" && isPayBookingStatus(model);
+        return String(status).trim().toLowerCase() !== "inactive" && !isExcludedlead(col.lead ? row[col.lead] : "") && isPayBookingStatus(model);
       }).map(row => {
         const unit = (row[col.unit] || "").trim();
         const lead = col.lead ? (row[col.lead] || "").trim() : "";
@@ -1928,6 +1928,9 @@
         const date =
           parseDate(rawDate);
 
+        const listingModel = detectedColumns.listingModel ? (row[detectedColumns.listingModel] || "") : "";
+        const payPerBooking = isPayBookingStatus(listingModel);
+
 
         if (isExcludedlead(lead)) {
           return;
@@ -1937,10 +1940,13 @@
         const statusCol = detectedColumns.status;
         const status = statusCol ? (row[statusCol] || "").trim().toLowerCase() : "active";
         if (status !== "active" && status !== "need to renew") return;
+        // Pay Per Booking has no scheduled expiration. It is still eligible
+        // for the manually flagged report when Status is Need to Renew.
+        if (status === "active" && payPerBooking) return;
         if (!rawDate && status === "active") { blankExpirationCount++; return; }
 
 
-        if (!date && rawDate) {
+        if (!date && rawDate && !payPerBooking) {
 
           issues.push(
             `Row ${index + 2}: invalid expiration date for ${unit || "unnamed unit"} (${rawDate}).`
@@ -1983,7 +1989,7 @@
             groupName,
 
           expires:
-            date,
+            payPerBooking ? null : date,
 
           cost:
             parseMoney(row[costCol]),
@@ -2276,7 +2282,7 @@
             "";
 
           $("status").textContent =
-            "Upload a Notion CSV, select the renewal month, and generate. Records with blank expiration dates or a an Asset Manager of N/A will be excluded.";
+            "Upload a Notion CSV, select the renewal month, and generate. Annual subscriptions require expiration dates; Pay Per Booking listings do not. Asset Managers marked N/A are excluded.";
 
           $("status").className =
             "status";
